@@ -4,7 +4,7 @@ package it.fb.structs;
  *
  * @author Flavio
  */
-public interface R {
+public interface SimpleStruct {
     @Field
     int getI();
     void setI(int value);

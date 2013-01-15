@@ -11,14 +11,14 @@ public class StructsTest {
     
     @Test
     public void arrayStructShouldBeInstantiableAndReturnItsSize() {
-        StructArray<S> array = Structs.newArray(S.class, 32);
+        StructArray<SimpleStruct> array = Structs.newArray(SimpleStruct.class, 32);
         assertNotNull(array);
         assertEquals(32, array.getSize());
     }
     
     @Test
     public void intGettersAndSettersShouldWorkAndRememberTheValue() {
-        StructArray<S> array = Structs.newArray(S.class, 32);
+        StructArray<SimpleStruct> array = Structs.newArray(SimpleStruct.class, 32);
         for (int i = 0; i < array.getSize(); i++) {
             array.get(i).setI(i * 4);
         }
@@ -29,7 +29,7 @@ public class StructsTest {
     
     @Test
     public void longGettersAndSettersShouldWorkAndRememberTheValue() {
-        StructArray<S> array = Structs.newArray(S.class, 32);
+        StructArray<SimpleStruct> array = Structs.newArray(SimpleStruct.class, 32);
         for (int i = 0; i < array.getSize(); i++) {
             array.get(i).setL(i * 4L);
         }
@@ -40,7 +40,7 @@ public class StructsTest {
     
     @Test
     public void byteArrayGettersAndSettersShouldWorkAndRememberTheValue() {
-        StructArray<S> array = Structs.newArray(S.class, 64);
+        StructArray<SimpleStruct> array = Structs.newArray(SimpleStruct.class, 64);
         for (int i = 0; i < array.getSize(); i++) {
             for (int j = 0; j < 32; j++) {
                 array.get(i).setB(j, (byte) (i + j));

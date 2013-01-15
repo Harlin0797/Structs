@@ -19,8 +19,8 @@ public interface S {
     void setB(int index, byte value);
     
     @Field
-    R getR();
+    SimpleStruct getR();
     
     @Field(length=20)
-    R getR2(int index);
+    SimpleStruct getR2(int index);
 }
