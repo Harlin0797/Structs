@@ -22,5 +22,5 @@ public interface S {
     SimpleStruct getR();
     
     @Field(length=20)
-    SimpleStruct getR2(int index);
+    StructArray<SimpleStruct> getR2();
 }

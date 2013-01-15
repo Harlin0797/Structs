@@ -52,4 +52,16 @@ public class StructsTest {
             }
         }
     }
+
+    @Test
+    public void accessThroghPointerShouldWork() {
+        StructArray<SimpleStruct> array = Structs.newArray(SimpleStruct.class, 32);
+        StructPointer<SimpleStruct> ptr = array.at(0);
+        for (int i = 0; i < array.getSize(); i++) {
+            ptr.at(i).get().setI(i);
+        }
+        for (int i = 0; i < array.getSize(); i++) {
+            assertEquals(i, ptr.at(i).get().getI());
+        }
+    }
 }

@@ -18,11 +18,15 @@ import java.util.Map;
  */
 public class Structs {
 
-    private static final Method INDEXED_SETTER_METHOD;
+    private static final Method POINTER_AT_METHOD;
+    private static final Method POINTER_OWNER_METHOD;
+    private static final Method POINTER_GET_METHOD;
     
     static {
         try {
-            INDEXED_SETTER_METHOD = Indexed.class.getMethod("setIndex", Integer.TYPE);
+            POINTER_AT_METHOD = StructPointer.class.getMethod("at", Integer.TYPE);
+            POINTER_GET_METHOD = StructPointer.class.getMethod("get");
+            POINTER_OWNER_METHOD = StructPointer.class.getMethod("getOwner");
         } catch (NoSuchMethodException | SecurityException ex) {
             throw new ExceptionInInitializerError(ex);
         }
@@ -54,7 +58,7 @@ public class Structs {
 
         @Override
         public StructPointer<T> at(int index) {
-            return new StructPointerImpl(createProxy(index, true));
+            return (StructPointer<T>) createProxy(index, true);
         }
 
         @Override
@@ -64,7 +68,7 @@ public class Structs {
 
         private T createProxy(int index, boolean settable) {
             if (settable) {
-                return (T) Proxy.newProxyInstance(structInterface.getClassLoader(), new Class[]{structInterface, Indexed.class}, new StructArrayImplInvocationHandler(index));
+                return (T) Proxy.newProxyInstance(structInterface.getClassLoader(), new Class[]{structInterface, StructPointer.class}, new StructArrayImplInvocationHandler(index));
             } else {
                 return (T) Proxy.newProxyInstance(structInterface.getClassLoader(), new Class[]{structInterface}, new StructArrayImplInvocationHandler(index));
             }
@@ -81,9 +85,13 @@ public class Structs {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 SField field;
-                if (method.equals(INDEXED_SETTER_METHOD)) {
+                if (method.equals(POINTER_AT_METHOD)) {
                     index = (Integer) args[0];
-                    return null;
+                    return proxy;
+                } else if (method.equals(POINTER_GET_METHOD)) {
+                    return proxy;
+                } else if (method.equals(POINTER_OWNER_METHOD)) {
+                    return StructArrayImpl.this;
                 } else if (null != (field = getters.get(method))) {
                     if (field.isArray()) {
                         return ((List<?>)data.get(index).get(field.getName()))
@@ -103,34 +111,6 @@ public class Structs {
                     throw new UnsupportedOperationException(method.toString());
                 }
             }
-        }
-        
-        private final class StructPointerImpl implements StructPointer<T> {
-            
-            private final T proxy;
-            private final Indexed proxy2;
-
-            public StructPointerImpl(T proxy) {
-                this.proxy = proxy;
-                this.proxy2 = (Indexed) proxy;
-            }
-
-            @Override
-            public T get() {
-                return proxy;
-            }
-
-            @Override
-            public StructPointer<T> at(int index) {
-                proxy2.setIndex(index);
-                return this;
-            }
-
-            @Override
-            public StructArray<T> getOwner() {
-                return StructArrayImpl.this;
-            }
-            
         }
 
         public static <T> StructArrayImpl<T> create(Class<T> structInterface, int size) {
@@ -192,9 +172,5 @@ public class Structs {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
         };
-    }
-
-    private interface Indexed {
-        void setIndex(int index);
     }
 }
