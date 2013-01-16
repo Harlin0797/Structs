@@ -16,7 +16,7 @@ public abstract class SFieldType {
         T visitShort();
         T visitInt();
         T visitLong();
-        T visitStruct();
+        T visitStruct(SStructDesc structDesc);
         T visitFloat();
         T visitDouble();
     }
@@ -118,7 +118,7 @@ public abstract class SFieldType {
         
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
-            return visitor.visitStruct();
+            return visitor.visitStruct(desc);
         }
     }
    

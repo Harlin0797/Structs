@@ -6,7 +6,7 @@ package it.fb.structs;
  */
 public interface StructArray<T> {
 
-    int getSize();
+    int getLength();
 
     /**
      * Retrieves a <b>new</b> instance of <code>T</code> which refers to

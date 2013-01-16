@@ -84,8 +84,8 @@ public class SField {
             }
 
             @Override
-            public T visitStruct() {
-                return visitor.visitStruct(SField.this);
+            public T visitStruct(SStructDesc structDesc) {
+                return visitor.visitStruct(SField.this, structDesc);
             }
         });
     }
@@ -98,6 +98,6 @@ public class SField {
         T visitLong(SField field);
         T visitFloat(SField field);
         T visitDouble(SField field);
-        T visitStruct(SField field);
+        T visitStruct(SField field, SStructDesc structDesc);
     }
 }

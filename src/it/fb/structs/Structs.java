@@ -1,5 +1,6 @@
 package it.fb.structs;
 
+import it.fb.structs.bytebuffer.StructArrayByteBufferImpl;
 import it.fb.structs.internal.Parser;
 import it.fb.structs.internal.SField;
 import it.fb.structs.internal.SField.SFieldVisitor;
@@ -18,9 +19,9 @@ import java.util.Map;
  */
 public class Structs {
 
-    private static final Method POINTER_AT_METHOD;
-    private static final Method POINTER_OWNER_METHOD;
-    private static final Method POINTER_GET_METHOD;
+    public static final Method POINTER_AT_METHOD;
+    public static final Method POINTER_OWNER_METHOD;
+    public static final Method POINTER_GET_METHOD;
     
     static {
         try {
@@ -33,17 +34,18 @@ public class Structs {
     }
 
     public static <T> StructArray<T> newArray(Class<T> structInterface, int size) {
-        return StructArrayImpl.create(structInterface, size);
+        return StructArrayByteBufferImpl.create(structInterface, size);
+        //return StructArrayHashImpl.create(structInterface, size);
     }
 
-    private static final class StructArrayImpl<T> implements StructArray<T> {
+    private static final class StructArrayHashImpl<T> implements StructArray<T> {
 
         private final Class<T> structInterface;
         private final Map<Method, SField> getters;
         private final Map<Method, SField> setters;
         private final List<Map<String, Object>> data;
 
-        public StructArrayImpl(Class<T> structInterface, Map<Method, SField> getters, 
+        public StructArrayHashImpl(Class<T> structInterface, Map<Method, SField> getters, 
                 Map<Method, SField> setters, List<Map<String, Object>> data) {
             this.structInterface = structInterface;
             this.getters = getters;
@@ -52,7 +54,7 @@ public class Structs {
         }
 
         @Override
-        public int getSize() {
+        public int getLength() {
             return data.size();
         }
 
@@ -91,7 +93,7 @@ public class Structs {
                 } else if (method.equals(POINTER_GET_METHOD)) {
                     return proxy;
                 } else if (method.equals(POINTER_OWNER_METHOD)) {
-                    return StructArrayImpl.this;
+                    return StructArrayHashImpl.this;
                 } else if (null != (field = getters.get(method))) {
                     if (field.isArray()) {
                         return ((List<?>)data.get(index).get(field.getName()))
@@ -113,7 +115,7 @@ public class Structs {
             }
         }
 
-        public static <T> StructArrayImpl<T> create(Class<T> structInterface, int size) {
+        public static <T> StructArrayHashImpl<T> create(Class<T> structInterface, int size) {
             SStructDesc desc = Parser.parse(structInterface);
             final Map<String, Object> values = new HashMap<>();
             final Map<Method, SField> getters = new HashMap<>();
@@ -137,7 +139,7 @@ public class Structs {
                 data.add(new HashMap<>(values));
             }
 
-            return new StructArrayImpl<>(structInterface, getters, setters, data);
+            return new StructArrayHashImpl<>(structInterface, getters, setters, data);
         }
         
         private static SFieldVisitor<Object> FieldValueVisitor = new SFieldVisitor<Object>() {
@@ -178,7 +180,7 @@ public class Structs {
             }
 
             @Override
-            public Object visitStruct(SField field) {
+            public Object visitStruct(SField field, SStructDesc structDesc) {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
         };
