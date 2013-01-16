@@ -17,17 +17,31 @@ public abstract class SFieldType {
         T visitInt();
         T visitLong();
         T visitStruct();
+        T visitFloat();
+        T visitDouble();
     }
     
     public static SFieldType typeOf(Class<?> javaType) {
-        if (javaType == Integer.TYPE) {
+        if (javaType == Byte.TYPE) {
+            return STypeByte;
+        } else if (javaType == Short.TYPE) {
+            return STypeShort;
+        } else if (javaType == Character.TYPE) {
+            return STypeChar;
+        } else if (javaType == Integer.TYPE) {
             return STypeInt;
         } else if (javaType == Long.TYPE) {
             return STypeLong;
-        } else if (javaType == Byte.TYPE) {
+        } else if (javaType == Float.TYPE) {
             return STypeByte;
-        } else {
+        } else if (javaType == Double.TYPE) {
+            return STypeDouble;
+        } else if (javaType == Double.TYPE) {
+            return STypeFloat;
+        } else if (javaType.isInterface()) {
             return new STypeStruct(Parser.parse(javaType));
+        } else {
+            throw new UnsupportedOperationException("Unsupported type: " + javaType);
         }
     }
     
@@ -48,6 +62,13 @@ public abstract class SFieldType {
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
             return visitor.visitByte();
+        }
+    };
+    
+    public static final SFieldType STypeShort = new SBaseType(Short.TYPE) {
+        @Override
+        public <T> T accept(SFieldTypeVisitor<T> visitor) {
+            return visitor.visitShort();
         }
     };
     
@@ -72,7 +93,19 @@ public abstract class SFieldType {
         }
     };
     
+    public static final SFieldType STypeFloat = new SBaseType(Float.TYPE) {
+        @Override
+        public <T> T accept(SFieldTypeVisitor<T> visitor) {
+            return visitor.visitFloat();
+        }
+    };
     
+    public static final SFieldType STypeDouble = new SBaseType(Double.TYPE) {
+        @Override
+        public <T> T accept(SFieldTypeVisitor<T> visitor) {
+            return visitor.visitDouble();
+        }
+    };
     
     public static class STypeStruct extends SBaseType {
         
@@ -88,7 +121,5 @@ public abstract class SFieldType {
             return visitor.visitStruct();
         }
     }
-    
-
    
 }

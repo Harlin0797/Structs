@@ -4,7 +4,7 @@ package it.fb.structs;
  *
  * @author Flavio
  */
-public interface S {
+public interface MediumStruct {
     
     @Field
     int getI();
@@ -19,8 +19,6 @@ public interface S {
     void setB(int index, byte value);
     
     @Field
-    SimpleStruct getR();
+    SimpleStruct getSimple();
     
-    @Field(length=20)
-    StructArray<SimpleStruct> getR2();
 }

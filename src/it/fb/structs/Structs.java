@@ -168,6 +168,16 @@ public class Structs {
             }
 
             @Override
+            public Object visitFloat(SField field) {
+                return Float.valueOf(0.0f);
+            }
+
+            @Override
+            public Object visitDouble(SField field) {
+                return Double.valueOf(0.0);
+            }
+
+            @Override
             public Object visitStruct(SField field) {
                 throw new UnsupportedOperationException("Not supported yet.");
             }

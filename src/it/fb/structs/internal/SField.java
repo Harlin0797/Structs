@@ -74,6 +74,16 @@ public class SField {
             }
 
             @Override
+            public T visitFloat() {
+                return visitor.visitFloat(SField.this);
+            }
+
+            @Override
+            public T visitDouble() {
+                return visitor.visitDouble(SField.this);
+            }
+
+            @Override
             public T visitStruct() {
                 return visitor.visitStruct(SField.this);
             }
@@ -86,6 +96,8 @@ public class SField {
         T visitShort(SField field);
         T visitInt(SField field);
         T visitLong(SField field);
+        T visitFloat(SField field);
+        T visitDouble(SField field);
         T visitStruct(SField field);
     }
 }

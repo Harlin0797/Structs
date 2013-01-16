@@ -54,14 +54,30 @@ public class StructsTest {
     }
 
     @Test
-    public void accessThroghPointerShouldWork() {
+    public void accessThroghPointerShouldWorkAsExpected() {
         StructArray<SimpleStruct> array = Structs.newArray(SimpleStruct.class, 32);
         StructPointer<SimpleStruct> ptr = array.at(0);
         for (int i = 0; i < array.getSize(); i++) {
             ptr.at(i).get().setI(i);
+            ptr.get().setL(i * 2L);
         }
         for (int i = 0; i < array.getSize(); i++) {
             assertEquals(i, ptr.at(i).get().getI());
+            assertEquals(i * 2L, ptr.get().getL());
+        }
+    }
+
+    @Test
+    public void accessingStructWithinStructShouldWork() {
+        StructArray<MediumStruct> array = Structs.newArray(MediumStruct.class, 32);
+        StructPointer<MediumStruct> ptr = array.at(0);
+        for (int i = 0; i < array.getSize(); i++) {
+            ptr.at(i).get().setI(i);
+            ptr.get().getSimple().setL(i * 2L);
+        }
+        for (int i = 0; i < array.getSize(); i++) {
+            assertEquals(i, ptr.at(i).get().getI());
+            assertEquals(i * 2L, ptr.get().getSimple().getL());
         }
     }
 }
