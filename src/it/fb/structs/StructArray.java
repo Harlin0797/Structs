@@ -8,6 +8,8 @@ public interface StructArray<T> {
 
     int getLength();
 
+    int getStructSize();
+
     /**
      * Retrieves a <b>new</b> instance of <code>T</code> which refers to
      * the <i>index</i>-th element of the array.

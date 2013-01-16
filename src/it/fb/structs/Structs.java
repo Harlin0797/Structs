@@ -59,6 +59,11 @@ public class Structs {
         }
 
         @Override
+        public int getStructSize() {
+            return 0;
+        }
+
+        @Override
         public StructPointer<T> at(int index) {
             return (StructPointer<T>) createProxy(index, true);
         }

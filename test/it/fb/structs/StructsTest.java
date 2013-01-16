@@ -10,10 +10,11 @@ import org.junit.Test;
 public class StructsTest {
     
     @Test
-    public void arrayStructShouldBeInstantiableAndReturnItsSize() {
+    public void arrayStructShouldBeInstantiableAndReturnItsLengthAndSize() {
         StructArray<SimpleStruct> array = Structs.newArray(SimpleStruct.class, 32);
         assertNotNull(array);
         assertEquals(32, array.getLength());
+        assertEquals(44, array.getStructSize());
     }
     
     @Test
@@ -70,6 +71,7 @@ public class StructsTest {
     @Test
     public void accessingStructWithinStructShouldWork() {
         StructArray<MediumStruct> array = Structs.newArray(MediumStruct.class, 32);
+        assertEquals(44 + 40, array.getStructSize());
         StructPointer<MediumStruct> ptr = array.at(0);
         for (int i = 0; i < array.getLength(); i++) {
             ptr.at(i).get().setI(i);

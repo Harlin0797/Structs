@@ -11,8 +11,8 @@ public interface MediumStruct {
     void setI(int value);
     
     @Field
-    long getL();
-    void setL(long value);
+    float getF();
+    void setF(float value);
     
     @Field(length=32)
     byte getB(int index);

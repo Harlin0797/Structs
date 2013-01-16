@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
  *
  * @author Flavio
  */
-public class ProxySetterMethodVisitor implements SFieldVisitor<IProxyMethodImplementor> {
+class ProxySetterMethodVisitor implements SFieldVisitor<IProxyMethodImplementor> {
     
     private final int offset;
 
@@ -26,8 +26,8 @@ public class ProxySetterMethodVisitor implements SFieldVisitor<IProxyMethodImple
     }
 
     @Override
-    public IProxyMethodImplementor visitByte(SField field) {
-        return new IProxyMethodImplementor() {
+    public BaseProxyMethodImplementor visitByte(SField field) {
+        return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
                 return data.put(baseOffset + offset + getIndex(args), (Byte) getValue(args));
@@ -36,8 +36,8 @@ public class ProxySetterMethodVisitor implements SFieldVisitor<IProxyMethodImple
     }
 
     @Override
-    public IProxyMethodImplementor visitChar(SField field) {
-        return new IProxyMethodImplementor() {
+    public BaseProxyMethodImplementor visitChar(SField field) {
+        return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
                 return data.putChar(baseOffset + offset + getIndex(args) * 2, (Character) getValue(args));
@@ -46,8 +46,8 @@ public class ProxySetterMethodVisitor implements SFieldVisitor<IProxyMethodImple
     }
 
     @Override
-    public IProxyMethodImplementor visitShort(SField field) {
-        return new IProxyMethodImplementor() {
+    public BaseProxyMethodImplementor visitShort(SField field) {
+        return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
                 return data.putShort(baseOffset + offset + getIndex(args) * 2, (Short) getValue(args));
@@ -56,8 +56,8 @@ public class ProxySetterMethodVisitor implements SFieldVisitor<IProxyMethodImple
     }
 
     @Override
-    public IProxyMethodImplementor visitInt(SField field) {
-        return new IProxyMethodImplementor() {
+    public BaseProxyMethodImplementor visitInt(SField field) {
+        return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
                 return data.putInt(baseOffset + offset + getIndex(args) * 4, (Integer) getValue(args));
@@ -66,8 +66,8 @@ public class ProxySetterMethodVisitor implements SFieldVisitor<IProxyMethodImple
     }
 
     @Override
-    public IProxyMethodImplementor visitLong(SField field) {
-        return new IProxyMethodImplementor() {
+    public BaseProxyMethodImplementor visitLong(SField field) {
+        return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
                 return data.putLong(baseOffset + offset + getIndex(args) * 8, (Long) getValue(args));
@@ -76,8 +76,8 @@ public class ProxySetterMethodVisitor implements SFieldVisitor<IProxyMethodImple
     }
 
     @Override
-    public IProxyMethodImplementor visitFloat(SField field) {
-        return new IProxyMethodImplementor() {
+    public BaseProxyMethodImplementor visitFloat(SField field) {
+        return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
                 return data.putFloat(baseOffset + offset + getIndex(args) * 4, (Float) getValue(args));
@@ -86,8 +86,8 @@ public class ProxySetterMethodVisitor implements SFieldVisitor<IProxyMethodImple
     }
 
     @Override
-    public IProxyMethodImplementor visitDouble(SField field) {
-        return new IProxyMethodImplementor() {
+    public BaseProxyMethodImplementor visitDouble(SField field) {
+        return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
                 return data.putDouble(baseOffset + offset + getIndex(args) * 8, (Double) getValue(args));
@@ -96,7 +96,7 @@ public class ProxySetterMethodVisitor implements SFieldVisitor<IProxyMethodImple
     }
 
     @Override
-    public IProxyMethodImplementor visitStruct(SField field, SStructDesc structDesc) {
+    public BaseProxyMethodImplementor visitStruct(SField field, SStructDesc structDesc) {
         throw new UnsupportedOperationException("Struct setter must not be specified");
     }
     
