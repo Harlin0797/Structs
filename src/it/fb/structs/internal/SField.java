@@ -11,13 +11,15 @@ public class SField {
     private final SFieldType type;
     private final int arrayLength;
     private final String name;
+    private final int position;
     private final Method getter;
     private final Method setter;
 
-    public SField(SFieldType type, int arrayLength, String name, Method getter, Method setter) {
+    public SField(SFieldType type, int arrayLength, String name, int position, Method getter, Method setter) {
         this.type = type;
         this.arrayLength = arrayLength;
         this.name = name;
+        this.position = position;
         this.getter = getter;
         this.setter = setter;
     }
@@ -44,6 +46,10 @@ public class SField {
 
     public Method getSetter() {
         return setter;
+    }
+
+    public int getPosition() {
+        return position;
     }
 
     public <T> T accept(final SFieldVisitor<T> visitor) {

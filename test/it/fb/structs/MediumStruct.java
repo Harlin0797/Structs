@@ -6,19 +6,19 @@ package it.fb.structs;
  */
 public interface MediumStruct {
     
-    @Field
+    @Field(position=0)
     int getI();
     void setI(int value);
     
-    @Field
+    @Field(position=1)
     float getF();
     void setF(float value);
     
-    @Field(length=32)
+    @Field(length=32, position=2)
     byte getB(int index);
     void setB(int index, byte value);
     
-    @Field
+    @Field(position=3)
     SimpleStruct getSimple();
     
 }

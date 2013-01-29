@@ -13,4 +13,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Field {
     int length() default 0;
+    int position() default Integer.MAX_VALUE;
 }

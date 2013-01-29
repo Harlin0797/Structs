@@ -4,7 +4,10 @@ import it.fb.structs.Field;
 import java.beans.Introspector;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,29 +21,37 @@ public class Parser {
         for (Method m : structInterface.getDeclaredMethods()) {
             Field fAnn = m.getAnnotation(Field.class);
             int length = fAnn == null ? 0 : fAnn.length();
+            int position = fAnn == null ? Integer.MAX_VALUE : fAnn.position();
             if (isGetter(m) || isArrayGetter(m)) {
                 String propName = Introspector.decapitalize(m.getName().substring(3));
                 if (fields.containsKey(propName)) {
                     SField f = fields.get(propName);
                     fields.put(propName, new SField(f.getType(),
-                            Math.max(length, f.getArrayLength()), propName, m, f.getSetter()));
+                            Math.max(length, f.getArrayLength()), propName, position, m, f.getSetter()));
                 } else {
                     fields.put(propName, new SField(SFieldType.typeOf(m.getReturnType()), 
-                            length, propName, m, null));
+                            length, propName, position, m, null));
                 }
             } else if (isSetter(m) || isArraySetter(m)) {
                 String propName = Introspector.decapitalize(m.getName().substring(3));
                 if (fields.containsKey(propName)) {
                     SField f = fields.get(propName);
                     fields.put(propName, new SField(f.getType(),
-                            Math.max(length, f.getArrayLength()), propName, f.getGetter(), m));
+                            Math.max(length, f.getArrayLength()), propName, position, f.getGetter(), m));
                 } else {
                     fields.put(propName, new SField(SFieldType.typeOf(m.getParameterTypes()[m.getParameterTypes().length - 1]), 
-                            length, propName, null, m));
+                            length, propName, position, null, m));
                 }
             }
         }
-        return new SStructDesc(structInterface, new ArrayList<>(fields.values()));
+        List<SField> sortedFields = new ArrayList<>(fields.values());
+        Collections.sort(sortedFields, new Comparator<SField>() {
+            @Override
+            public int compare(SField o1, SField o2) {
+                return Integer.compare(o1.getPosition(), o2.getPosition());
+            }
+        });
+        return new SStructDesc(structInterface, sortedFields);
     }
 
     private static boolean isGetter(Method m) {
