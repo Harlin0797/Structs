@@ -33,11 +33,9 @@ public abstract class SFieldType {
         } else if (javaType == Long.TYPE) {
             return STypeLong;
         } else if (javaType == Float.TYPE) {
-            return STypeByte;
+            return STypeFloat;
         } else if (javaType == Double.TYPE) {
             return STypeDouble;
-        } else if (javaType == Double.TYPE) {
-            return STypeFloat;
         } else if (javaType.isInterface()) {
             return new STypeStruct(Parser.parse(javaType));
         } else {

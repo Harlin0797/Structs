@@ -106,24 +106,29 @@ public class ByteBufferAsmSAF<T> implements IStructArrayFactory<T> {
                 field.accept(new SFieldVisitor<Void>() {
                     @Override
                     public Void visitByte(SField field) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "get", "(I)B");
+                        mv.visitInsn(IRETURN);
+                        return null;
                     }
 
                     @Override
                     public Void visitChar(SField field) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "getChar", "(I)C");
+                        mv.visitInsn(IRETURN);
+                        return null;
                     }
 
                     @Override
                     public Void visitShort(SField field) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "getShort", "(I)S");
+                        mv.visitInsn(IRETURN);
+                        return null;
                     }
 
                     @Override
                     public Void visitInt(SField field) {
                         mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "getInt", "(I)I");
                         mv.visitInsn(IRETURN);
-                        mv.visitMaxs(2, 1);
                         return null;
                     }
 
@@ -131,18 +136,21 @@ public class ByteBufferAsmSAF<T> implements IStructArrayFactory<T> {
                     public Void visitLong(SField field) {
                         mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "getLong", "(I)J");
                         mv.visitInsn(LRETURN);
-                        mv.visitMaxs(3, 1);
                         return null;
                     }
 
                     @Override
                     public Void visitFloat(SField field) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "getFloat", "(I)F");
+                        mv.visitInsn(FRETURN);
+                        return null;
                     }
 
                     @Override
                     public Void visitDouble(SField field) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "getDouble", "(I)D");
+                        mv.visitInsn(DRETURN);
+                        return null;
                     }
 
                     @Override
@@ -152,6 +160,7 @@ public class ByteBufferAsmSAF<T> implements IStructArrayFactory<T> {
                 });
             }
             
+            mv.visitMaxs(3, 1);
             mv.visitEnd();
         }
 
@@ -163,34 +172,37 @@ public class ByteBufferAsmSAF<T> implements IStructArrayFactory<T> {
             mv.visitFieldInsn(GETFIELD, internalName, "data", Type.getDescriptor(ByteBuffer.class));
             mv.visitVarInsn(ALOAD, 0);
             mv.visitFieldInsn(GETFIELD, internalName, "position", "I");
-            
+            visitAdd(mv, offset);
+
             if (field.isArray()) {
                 field.accept(null);
             } else {
                 field.accept(new SFieldVisitor<Void>() {
                     @Override
                     public Void visitByte(SField field) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        mv.visitVarInsn(ILOAD, 1);
+                        mv.visitMethodInsn(INVOKEVIRTUAL, "java/nio/ByteBuffer", "put", "(IB)Ljava/nio/ByteBuffer;");
+                        return null;
                     }
 
                     @Override
                     public Void visitChar(SField field) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        mv.visitVarInsn(ILOAD, 1);
+                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "putChar", "(IC)Ljava/nio/ByteBuffer;");
+                        return null;
                     }
 
                     @Override
                     public Void visitShort(SField field) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        mv.visitVarInsn(ILOAD, 1);
+                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "putShort", "(IS)Ljava/nio/ByteBuffer;");
+                        return null;
                     }
 
                     @Override
                     public Void visitInt(SField field) {
-                        visitAdd(mv, offset);
                         mv.visitVarInsn(ILOAD, 1);
                         mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "putInt", "(II)Ljava/nio/ByteBuffer;");
-                        mv.visitInsn(POP);
-                        mv.visitInsn(RETURN);
-                        mv.visitMaxs(3, 2);
                         return null;
                     }
 
@@ -198,20 +210,21 @@ public class ByteBufferAsmSAF<T> implements IStructArrayFactory<T> {
                     public Void visitLong(SField field) {
                         mv.visitVarInsn(LLOAD, 1);
                         mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "putLong", "(IJ)Ljava/nio/ByteBuffer;");
-                        mv.visitInsn(POP);
-                        mv.visitInsn(RETURN);
-                        mv.visitMaxs(4, 3);
                         return null;
                     }
 
                     @Override
                     public Void visitFloat(SField field) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        mv.visitVarInsn(FLOAD, 1);
+                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "putFloat", "(IF)Ljava/nio/ByteBuffer;");
+                        return null;
                     }
 
                     @Override
                     public Void visitDouble(SField field) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        mv.visitVarInsn(DLOAD, 1);
+                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "putDouble", "(ID)Ljava/nio/ByteBuffer;");
+                        return null;
                     }
 
                     @Override
@@ -221,6 +234,9 @@ public class ByteBufferAsmSAF<T> implements IStructArrayFactory<T> {
                 });
             }
             
+            mv.visitInsn(POP);
+            mv.visitInsn(RETURN);
+            mv.visitMaxs(4, 3);
             mv.visitEnd();
         }
 

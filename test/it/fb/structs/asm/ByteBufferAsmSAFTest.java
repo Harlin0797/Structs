@@ -17,18 +17,20 @@ public class ByteBufferAsmSAFTest {
     public void testNewStructArray() {
         StructArrayRepository sar = new StructArrayRepository();
         StructArray<BasicStruct> structArray = sar.newStructArray(ByteBufferAsmSAF.Factory, BasicStruct.class, 32);
-        assertEquals(structArray.getLength(), 32);
-        assertEquals(structArray.getStructSize(), 12);
+        assertEquals(32, structArray.getLength());
+        assertEquals(36, structArray.getStructSize());
         
         StructPointer<BasicStruct> ptr = structArray.at(0);
         for (int i = 0; i < 32; i++) {
             structArray.get(i).setI(i + 12);
             ptr.at(i).get().setL(i + 123L);
+            ptr.get().setF(3.0f * i);
         }
         
         for (int i = 0; i < 32; i++) {
             assertEquals(i + 12, structArray.get(i).getI());
             assertEquals(i + 123L, ptr.at(i).get().getL());
+            assertEquals(3.0f * i, ptr.get().getF(), 0.0f);
         }
     }
 }
