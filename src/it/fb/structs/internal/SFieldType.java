@@ -10,6 +10,8 @@ public abstract class SFieldType {
     
     public abstract <T> T accept(SFieldTypeVisitor<T> visitor);
     
+    public abstract int getSize();
+    
     public static interface SFieldTypeVisitor<T> {
         T visitByte();
         T visitChar();
@@ -45,60 +47,75 @@ public abstract class SFieldType {
     
     static abstract class SBaseType extends SFieldType {
         protected final Class<?> javaType;
+        protected final int size;
 
-        public SBaseType(Class<?> javaType) {
+        public SBaseType(Class<?> javaType, int size) {
             this.javaType = javaType;
+            this.size = size;
         }
 
         @Override
         public Class<?> getJavaType() {
             return javaType;
         }
+
+        @Override
+        public int getSize() {
+            if (size <= 0) {
+                throw new IllegalStateException("No default size for this type");
+            }
+            return size;
+        }
+
+        @Override
+        public String toString() {
+            return javaType.getSimpleName();
+        }
     }
     
-    public static final SFieldType STypeByte = new SBaseType(Byte.TYPE) {
+    public static final SFieldType STypeByte = new SBaseType(Byte.TYPE, 1) {
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
             return visitor.visitByte();
         }
     };
     
-    public static final SFieldType STypeShort = new SBaseType(Short.TYPE) {
+    public static final SFieldType STypeShort = new SBaseType(Short.TYPE, 2) {
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
             return visitor.visitShort();
         }
     };
     
-    public static final SFieldType STypeChar = new SBaseType(Character.TYPE) {
+    public static final SFieldType STypeChar = new SBaseType(Character.TYPE, 2) {
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
             return visitor.visitChar();
         }
     };
     
-    public static final SFieldType STypeInt = new SBaseType(Integer.TYPE) {
+    public static final SFieldType STypeInt = new SBaseType(Integer.TYPE, 4) {
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
             return visitor.visitInt();
         }
     };
     
-    public static final SFieldType STypeLong = new SBaseType(Long.TYPE) {
+    public static final SFieldType STypeLong = new SBaseType(Long.TYPE, 8) {
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
             return visitor.visitLong();
         }
     };
     
-    public static final SFieldType STypeFloat = new SBaseType(Float.TYPE) {
+    public static final SFieldType STypeFloat = new SBaseType(Float.TYPE, 4) {
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
             return visitor.visitFloat();
         }
     };
     
-    public static final SFieldType STypeDouble = new SBaseType(Double.TYPE) {
+    public static final SFieldType STypeDouble = new SBaseType(Double.TYPE, 8) {
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
             return visitor.visitDouble();
@@ -110,7 +127,7 @@ public abstract class SFieldType {
         private final SStructDesc desc;
         
         public STypeStruct(SStructDesc desc) {
-            super(desc.getJavaInterface());
+            super(desc.getJavaInterface(), -1);
             this.desc = desc;
         }
         

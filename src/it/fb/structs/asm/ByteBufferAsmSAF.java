@@ -98,61 +98,69 @@ public class ByteBufferAsmSAF<T> implements IStructArrayFactory<T> {
             mv.visitFieldInsn(GETFIELD, internalName, "data", Type.getDescriptor(ByteBuffer.class));
             mv.visitVarInsn(ALOAD, 0);
             mv.visitFieldInsn(GETFIELD, internalName, "position", "I");
-            visitAdd(mv, offset);
-            
-            if (field.isArray()) {
-                field.accept(null);// TODO
-            } else {
-                field.accept(new SFieldVisitor<Void>() {
-                    @Override
-                    public Void visitByte(SField field) {
-                        return primitiveGetter(IRETURN, "get", "B");
-                    }
-
-                    @Override
-                    public Void visitChar(SField field) {
-                        return primitiveGetter(IRETURN, "getChar", "C");
-                    }
-
-                    @Override
-                    public Void visitShort(SField field) {
-                        return primitiveGetter(IRETURN, "getShort", "S");
-                    }
-
-                    @Override
-                    public Void visitInt(SField field) {
-                        return primitiveGetter(IRETURN, "getInt", "I");
-                    }
-
-                    @Override
-                    public Void visitLong(SField field) {
-                        return primitiveGetter(LRETURN, "getLong", "J");
-                    }
-
-                    @Override
-                    public Void visitFloat(SField field) {
-                        return primitiveGetter(FRETURN, "getFloat", "F");
-                    }
-
-                    @Override
-                    public Void visitDouble(SField field) {
-                        return primitiveGetter(DRETURN, "getDouble", "D");
-                    }
-                    
-                    private Void primitiveGetter(int returnOpcode, String method, String typeDescriptor) {
-                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), method, "(I)" + typeDescriptor);
-                        mv.visitInsn(returnOpcode);
-                        return null;
-                    }
-                    
-                    @Override
-                    public Void visitStruct(SField field, SStructDesc structDesc) {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-                });
+            if (offset != 0) {
+                visitInsnConst(mv, offset);
+                mv.visitInsn(IADD);
             }
             
-            mv.visitMaxs(3, 1);
+            if (field.isArray()) {
+                mv.visitVarInsn(ILOAD, 1);
+                if (field.getType().getSize() != 1) {
+                    visitInsnConst(mv, field.getType().getSize());
+                    mv.visitInsn(IMUL);
+                }
+                mv.visitInsn(IADD);
+            }
+
+            field.accept(new SFieldVisitor<Void>() {
+                @Override
+                public Void visitByte(SField field) {
+                    return primitiveGetter(IRETURN, "get", "B");
+                }
+
+                @Override
+                public Void visitChar(SField field) {
+                    return primitiveGetter(IRETURN, "getChar", "C");
+                }
+
+                @Override
+                public Void visitShort(SField field) {
+                    return primitiveGetter(IRETURN, "getShort", "S");
+                }
+
+                @Override
+                public Void visitInt(SField field) {
+                    return primitiveGetter(IRETURN, "getInt", "I");
+                }
+
+                @Override
+                public Void visitLong(SField field) {
+                    return primitiveGetter(LRETURN, "getLong", "J");
+                }
+
+                @Override
+                public Void visitFloat(SField field) {
+                    return primitiveGetter(FRETURN, "getFloat", "F");
+                }
+
+                @Override
+                public Void visitDouble(SField field) {
+                    return primitiveGetter(DRETURN, "getDouble", "D");
+                }
+
+                private Void primitiveGetter(int returnOpcode, String method, String typeDescriptor) {
+                    mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), method, "(I)" + typeDescriptor);
+                    mv.visitInsn(returnOpcode);
+                    return null;
+                }
+
+                @Override
+                public Void visitStruct(SField field, SStructDesc structDesc) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+            });
+            
+            mv.visitMaxs(4, 2);
             mv.visitEnd();
         }
 
@@ -164,59 +172,67 @@ public class ByteBufferAsmSAF<T> implements IStructArrayFactory<T> {
             mv.visitFieldInsn(GETFIELD, internalName, "data", Type.getDescriptor(ByteBuffer.class));
             mv.visitVarInsn(ALOAD, 0);
             mv.visitFieldInsn(GETFIELD, internalName, "position", "I");
-            visitAdd(mv, offset);
-
-            if (field.isArray()) {
-                field.accept(null);
-            } else {
-                field.accept(new SFieldVisitor<Void>() {
-                    @Override
-                    public Void visitByte(SField field) {
-                        return primitiveSetter(ILOAD, "put", "B");
-                    }
-
-                    @Override
-                    public Void visitChar(SField field) {
-                        return primitiveSetter(ILOAD, "putChar", "C");
-                    }
-
-                    @Override
-                    public Void visitShort(SField field) {
-                        return primitiveSetter(ILOAD, "putShort", "S");
-                    }
-
-                    @Override
-                    public Void visitInt(SField field) {
-                        return primitiveSetter(ILOAD, "putInt", "I");
-                    }
-
-                    @Override
-                    public Void visitLong(SField field) {
-                        return primitiveSetter(LLOAD, "putLong", "J");
-                    }
-
-                    @Override
-                    public Void visitFloat(SField field) {
-                        return primitiveSetter(FLOAD, "putFloat", "F");
-                    }
-
-                    @Override
-                    public Void visitDouble(SField field) {
-                        return primitiveSetter(DLOAD, "putDouble", "D");
-                    }
-
-                    private Void primitiveSetter(int loadOpcode, String method, String typeDescriptor) {
-                        mv.visitVarInsn(loadOpcode, 1);
-                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), method, "(I" + typeDescriptor + ")Ljava/nio/ByteBuffer;");
-                        return null;
-                    }
-
-                    @Override
-                    public Void visitStruct(SField field, SStructDesc structDesc) {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-                });
+            if (offset != 0) {
+                visitInsnConst(mv, offset);
+                mv.visitInsn(IADD);
             }
+            
+            if (field.isArray()) {
+                mv.visitVarInsn(ILOAD, 1);
+                if (field.getType().getSize() != 1) {
+                    visitInsnConst(mv, field.getType().getSize());
+                    mv.visitInsn(IMUL);
+                }
+                mv.visitInsn(IADD);
+            }
+
+            field.accept(new SFieldVisitor<Void>() {
+                @Override
+                public Void visitByte(SField field) {
+                    return primitiveSetter(field, ILOAD, "put", "B");
+                }
+
+                @Override
+                public Void visitChar(SField field) {
+                    return primitiveSetter(field, ILOAD, "putChar", "C");
+                }
+
+                @Override
+                public Void visitShort(SField field) {
+                    return primitiveSetter(field, ILOAD, "putShort", "S");
+                }
+
+                @Override
+                public Void visitInt(SField field) {
+                    return primitiveSetter(field, ILOAD, "putInt", "I");
+                }
+
+                @Override
+                public Void visitLong(SField field) {
+                    return primitiveSetter(field, LLOAD, "putLong", "J");
+                }
+
+                @Override
+                public Void visitFloat(SField field) {
+                    return primitiveSetter(field, FLOAD, "putFloat", "F");
+                }
+
+                @Override
+                public Void visitDouble(SField field) {
+                    return primitiveSetter(field, DLOAD, "putDouble", "D");
+                }
+
+                private Void primitiveSetter(SField field, int loadOpcode, String method, String typeDescriptor) {
+                    mv.visitVarInsn(loadOpcode, field.isArray() ? 2 : 1);
+                    mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), method, "(I" + typeDescriptor + ")Ljava/nio/ByteBuffer;");
+                    return null;
+                }
+
+                @Override
+                public Void visitStruct(SField field, SStructDesc structDesc) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+            });
             
             mv.visitInsn(POP);
             mv.visitInsn(RETURN);
@@ -241,7 +257,7 @@ public class ByteBufferAsmSAF<T> implements IStructArrayFactory<T> {
                 mv.visitFieldInsn(PUTFIELD, internalName, "owner", Type.getDescriptor(StructArray.class));
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitVarInsn(ILOAD, 3);
-                mv.visitIntInsn(BIPUSH, structSize);
+                visitInsnConst(mv, structSize);
                 mv.visitInsn(IMUL);
                 mv.visitFieldInsn(PUTFIELD, internalName, "position", "I");
                 mv.visitInsn(RETURN);
@@ -263,7 +279,7 @@ public class ByteBufferAsmSAF<T> implements IStructArrayFactory<T> {
                 mv.visitCode();
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitVarInsn(ILOAD, 1);
-                mv.visitIntInsn(BIPUSH, structSize);
+                visitInsnConst(mv, structSize);
                 mv.visitInsn(IMUL);
                 mv.visitFieldInsn(PUTFIELD, internalName, "position", "I");
                 mv.visitVarInsn(ALOAD, 0);
@@ -332,10 +348,10 @@ public class ByteBufferAsmSAF<T> implements IStructArrayFactory<T> {
     }
     
     private static final int[] CONSTS = new int[] { ICONST_0, ICONST_1, ICONST_2, ICONST_3, ICONST_4, ICONST_5 };
-    private static void visitAdd(MethodVisitor mv, int offset) {
+    private static void visitInsnConst(MethodVisitor mv, int offset) {
         switch (offset) {
             case 0:
-                return;
+                throw new IllegalArgumentException("Invalid const: " + offset);
             case 1:
             case 2:
             case 3:
@@ -344,11 +360,15 @@ public class ByteBufferAsmSAF<T> implements IStructArrayFactory<T> {
                 mv.visitInsn(CONSTS[offset]);
                 break;
             default:
-                mv.visitIntInsn(BIPUSH, offset);
+                if ((byte)offset == offset) {
+                    mv.visitIntInsn(BIPUSH, offset);
+                } else if ((short)offset == offset) {
+                    mv.visitIntInsn(SIPUSH, offset);
+                } else {
+                    throw new IllegalArgumentException("Invalid const: " + offset);
+                }
                 break;
         }
-        
-        mv.visitInsn(IADD);
     }
     
     @SuppressWarnings("UseSpecificCatch")

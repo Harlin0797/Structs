@@ -95,7 +95,12 @@ public class SField {
             }
         });
     }
-    
+
+    @Override
+    public String toString() {
+        return type + " " + name;
+    }
+
     public interface SFieldVisitor<T> {
         T visitByte(SField field);
         T visitChar(SField field);
