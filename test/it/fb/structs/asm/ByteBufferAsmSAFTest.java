@@ -24,12 +24,16 @@ public class ByteBufferAsmSAFTest {
         for (int i = 0; i < 32; i++) {
             structArray.get(i).setI(i + 12);
             ptr.at(i).get().setL(i + 123L);
+            ptr.get().setB((byte) (i + 11));
+            ptr.get().setS((short) (i + 412));
             ptr.get().setF(3.0f * i);
         }
         
         for (int i = 0; i < 32; i++) {
             assertEquals(i + 12, structArray.get(i).getI());
             assertEquals(i + 123L, ptr.at(i).get().getL());
+            assertEquals((byte) (i + 11), ptr.get().getB());
+            assertEquals((short) (i + 412), ptr.get().getS());
             assertEquals(3.0f * i, ptr.get().getF(), 0.0f);
         }
     }

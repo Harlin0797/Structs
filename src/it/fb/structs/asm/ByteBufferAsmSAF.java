@@ -106,53 +106,45 @@ public class ByteBufferAsmSAF<T> implements IStructArrayFactory<T> {
                 field.accept(new SFieldVisitor<Void>() {
                     @Override
                     public Void visitByte(SField field) {
-                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "get", "(I)B");
-                        mv.visitInsn(IRETURN);
-                        return null;
+                        return primitiveGetter(IRETURN, "get", "B");
                     }
 
                     @Override
                     public Void visitChar(SField field) {
-                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "getChar", "(I)C");
-                        mv.visitInsn(IRETURN);
-                        return null;
+                        return primitiveGetter(IRETURN, "getChar", "C");
                     }
 
                     @Override
                     public Void visitShort(SField field) {
-                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "getShort", "(I)S");
-                        mv.visitInsn(IRETURN);
-                        return null;
+                        return primitiveGetter(IRETURN, "getShort", "S");
                     }
 
                     @Override
                     public Void visitInt(SField field) {
-                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "getInt", "(I)I");
-                        mv.visitInsn(IRETURN);
-                        return null;
+                        return primitiveGetter(IRETURN, "getInt", "I");
                     }
 
                     @Override
                     public Void visitLong(SField field) {
-                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "getLong", "(I)J");
-                        mv.visitInsn(LRETURN);
-                        return null;
+                        return primitiveGetter(LRETURN, "getLong", "J");
                     }
 
                     @Override
                     public Void visitFloat(SField field) {
-                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "getFloat", "(I)F");
-                        mv.visitInsn(FRETURN);
-                        return null;
+                        return primitiveGetter(FRETURN, "getFloat", "F");
                     }
 
                     @Override
                     public Void visitDouble(SField field) {
-                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "getDouble", "(I)D");
-                        mv.visitInsn(DRETURN);
+                        return primitiveGetter(DRETURN, "getDouble", "D");
+                    }
+                    
+                    private Void primitiveGetter(int returnOpcode, String method, String typeDescriptor) {
+                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), method, "(I)" + typeDescriptor);
+                        mv.visitInsn(returnOpcode);
                         return null;
                     }
-
+                    
                     @Override
                     public Void visitStruct(SField field, SStructDesc structDesc) {
                         throw new UnsupportedOperationException("Not supported yet.");
@@ -180,50 +172,42 @@ public class ByteBufferAsmSAF<T> implements IStructArrayFactory<T> {
                 field.accept(new SFieldVisitor<Void>() {
                     @Override
                     public Void visitByte(SField field) {
-                        mv.visitVarInsn(ILOAD, 1);
-                        mv.visitMethodInsn(INVOKEVIRTUAL, "java/nio/ByteBuffer", "put", "(IB)Ljava/nio/ByteBuffer;");
-                        return null;
+                        return primitiveSetter(ILOAD, "put", "B");
                     }
 
                     @Override
                     public Void visitChar(SField field) {
-                        mv.visitVarInsn(ILOAD, 1);
-                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "putChar", "(IC)Ljava/nio/ByteBuffer;");
-                        return null;
+                        return primitiveSetter(ILOAD, "putChar", "C");
                     }
 
                     @Override
                     public Void visitShort(SField field) {
-                        mv.visitVarInsn(ILOAD, 1);
-                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "putShort", "(IS)Ljava/nio/ByteBuffer;");
-                        return null;
+                        return primitiveSetter(ILOAD, "putShort", "S");
                     }
 
                     @Override
                     public Void visitInt(SField field) {
-                        mv.visitVarInsn(ILOAD, 1);
-                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "putInt", "(II)Ljava/nio/ByteBuffer;");
-                        return null;
+                        return primitiveSetter(ILOAD, "putInt", "I");
                     }
 
                     @Override
                     public Void visitLong(SField field) {
-                        mv.visitVarInsn(LLOAD, 1);
-                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "putLong", "(IJ)Ljava/nio/ByteBuffer;");
-                        return null;
+                        return primitiveSetter(LLOAD, "putLong", "J");
                     }
 
                     @Override
                     public Void visitFloat(SField field) {
-                        mv.visitVarInsn(FLOAD, 1);
-                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "putFloat", "(IF)Ljava/nio/ByteBuffer;");
-                        return null;
+                        return primitiveSetter(FLOAD, "putFloat", "F");
                     }
 
                     @Override
                     public Void visitDouble(SField field) {
-                        mv.visitVarInsn(DLOAD, 1);
-                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), "putDouble", "(ID)Ljava/nio/ByteBuffer;");
+                        return primitiveSetter(DLOAD, "putDouble", "D");
+                    }
+
+                    private Void primitiveSetter(int loadOpcode, String method, String typeDescriptor) {
+                        mv.visitVarInsn(loadOpcode, 1);
+                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ByteBuffer.class), method, "(I" + typeDescriptor + ")Ljava/nio/ByteBuffer;");
                         return null;
                     }
 
