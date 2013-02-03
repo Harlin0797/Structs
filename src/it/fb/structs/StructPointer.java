@@ -42,4 +42,6 @@ public interface StructPointer<T> {
      * @return A new long-lived instance of T
      */
     //public T pin();
+
+    //public StructPointer<T> duplicate();
 }

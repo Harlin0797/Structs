@@ -64,7 +64,7 @@ class ByteBufferProxyHandlerFactory<T> {
     public static <T> ByteBufferProxyHandlerFactory<T> newHandlerFactory(Class<T> structInterface) {
         SStructDesc desc = Parser.parse(structInterface);
         OffsetVisitor ov = new OffsetVisitor(4);
-        Map<Method, IProxyMethodImplementor> implementors = new HashMap<>();
+        Map<Method, IProxyMethodImplementor> implementors = new HashMap<Method, IProxyMethodImplementor>();
         for (SField field : desc.getFields()) {
             int fieldOffset = field.accept(ov);
             implementors.put(field.getGetter(), field.accept(new ProxyGetterMethodVisitor(fieldOffset)));
@@ -72,7 +72,7 @@ class ByteBufferProxyHandlerFactory<T> {
                 implementors.put(field.getSetter(), field.accept(new ProxySetterMethodVisitor(fieldOffset)));
             }
         }
-        return new ByteBufferProxyHandlerFactory<>(structInterface, ov.getSize(), implementors);
+        return new ByteBufferProxyHandlerFactory<T>(structInterface, ov.getSize(), implementors);
     }
     
 

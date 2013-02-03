@@ -12,7 +12,7 @@ import java.util.Map;
 public class SStructDesc {
     
     private final Class<?> javaInterface;
-    private final Map<String, SField> fields = new LinkedHashMap<>();
+    private final Map<String, SField> fields = new LinkedHashMap<String, SField>();
 
     public SStructDesc(Class<?> structClass, List<SField> fields) {
         this.javaInterface = structClass;

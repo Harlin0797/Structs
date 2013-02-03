@@ -34,12 +34,12 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS + ClassWriter.COMPUTE_FRAMES);
         String internalName = Type.getInternalName(structInterface) + "$$Impl$$" + System.identityHashCode(this);
         cw.visit(V1_5, 
-                ACC_PUBLIC + ACC_FINAL + ACC_SUPER,
+                ACC_PUBLIC + ACC_FINAL + ACC_SUPER + ACC_SYNTHETIC,
                 internalName,
                 Type.getDescriptor(Object.class) + Type.getDescriptor(structInterface) + getGenericDescriptor(StructPointer.class, structInterface),
                 Type.getInternalName(Object.class),
                 new String[] { Type.getInternalName(structInterface), Type.getInternalName(StructPointer.class) });
-        Builder<T> builder = new Builder<>(dataFactory, structInterface, cw, internalName);
+        Builder<T> builder = new Builder<T>(dataFactory, structInterface, cw, internalName);
         SStructDesc desc = Parser.parse(structInterface);
         OffsetVisitor ov = new OffsetVisitor(4);
         
@@ -105,7 +105,6 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
             }
 
             @Override
-            @SuppressWarnings("UseSpecificCatch")
             public T get(int index) {
                 try {
                     return structInterface.cast(constructor.newInstance(data, this, 0, index));
@@ -115,7 +114,6 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
             }
 
             @Override
-            @SuppressWarnings("UseSpecificCatch")
             public StructPointer<T> at(int index) {
                 try {
                     return StructPointer.class.cast(constructor.newInstance(data, this, 0, index));
@@ -142,7 +140,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
         private final String bcInternalName;
         private final int invokeOpcode;
         
-        private final List<ChildFieldData> childFields = new ArrayList<>(); 
+        private final List<ChildFieldData> childFields = new ArrayList<ChildFieldData>(); 
 
         public Builder(StructData.Factory<D> dataFactory, Class<T> structInterface, ClassWriter cw, String internalName) {
             this.dataFactory = dataFactory;
@@ -447,15 +445,15 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
             try {
                 constructor = implementation.getDeclaredConstructor(
                         dataFactory.getBufferClass(), StructArray.class, Integer.TYPE, Integer.TYPE);
-            } catch (NoSuchMethodException | SecurityException ex) {
+            } catch (Exception ex) {
                 throw new IllegalStateException(ex);
             }
-            return new AsmStructArrayClassFactory<>(structInterface, implementation, constructor, structSize);
+            return new AsmStructArrayClassFactory<T>(structInterface, implementation, constructor, structSize);
         }
     }
 
     public static <D extends StructData> IStructArrayFactory<D> newInstance(StructData.Factory<D> factory) {
-        return new AsmStructArrayFactory<>(factory);
+        return new AsmStructArrayFactory<D>(factory);
     }
 
     private static String getGenericDescriptor(Class<?> outerClass, Class<?> innerClass) {
@@ -489,7 +487,6 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
         }
     }
 
-    @SuppressWarnings("UseSpecificCatch")
     private static Class<?> loadInto(ClassLoader loader, String binaryName, byte[] classData) {
         try {
             Method defineClass = ClassLoader.class.getDeclaredMethod("defineClass", String.class, byte[].class, Integer.TYPE, Integer.TYPE);

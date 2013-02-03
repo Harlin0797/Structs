@@ -22,7 +22,10 @@ public class Parser {
     }
 
     public static SStructDesc parse(Class<?> structInterface) {
-        Map<String, SField> fields = new LinkedHashMap<>();
+        if (!structInterface.isInterface()) {
+            throw new IllegalArgumentException(structInterface + " is not an interface");
+        }
+        Map<String, SField> fields = new LinkedHashMap<String, SField>();
         for (Method m : structInterface.getDeclaredMethods()) {
             Field fAnn = m.getAnnotation(Field.class);
             int length = fAnn == null ? 0 : fAnn.length();
@@ -49,7 +52,10 @@ public class Parser {
                 }
             }
         }
-        List<SField> sortedFields = new ArrayList<>(fields.values());
+        if (fields.isEmpty()) {
+            throw new IllegalArgumentException("No valid struct fields in " + structInterface);
+        }
+        List<SField> sortedFields = new ArrayList<SField>(fields.values());
         Collections.sort(sortedFields, new Comparator<SField>() {
             @Override
             public int compare(SField o1, SField o2) {

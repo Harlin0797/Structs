@@ -14,7 +14,7 @@ public abstract class AbstractStructArrayFactory<D extends StructData> implement
 
     protected final StructData.Factory<D> dataFactory;
     private final Map<Class<?>, AbstractStructArrayClassFactory<?>> classCache = 
-            new HashMap<>();
+            new HashMap<Class<?>, AbstractStructArrayClassFactory<?>>();
 
     public AbstractStructArrayFactory(StructData.Factory<D> dataFactory) {
         this.dataFactory = dataFactory;

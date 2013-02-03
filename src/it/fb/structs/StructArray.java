@@ -6,8 +6,16 @@ package it.fb.structs;
  */
 public interface StructArray<T> {
 
+    /**
+     * Retrieves the number of elements in the array.
+     * @return The number of elements in the array; always positive.
+     */
     int getLength();
 
+    /**
+     * Retrieves the size of each element in the array.
+     * @return The size of each element in the array; always positive.
+     */
     int getStructSize();
 
     /**
@@ -26,5 +34,10 @@ public interface StructArray<T> {
      */
     StructPointer<T> at(int index);
 
+    /**
+     * Destroys the structure, releasing all associated resources.
+     * All the pointers and instances obtained through this object
+     * are invalid and must be discarded.
+     */
     void release();
 }

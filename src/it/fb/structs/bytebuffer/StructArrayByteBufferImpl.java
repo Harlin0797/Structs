@@ -49,7 +49,7 @@ public final class StructArrayByteBufferImpl<T> implements StructArray<T> {
     public static <T> StructArrayByteBufferImpl<T> create(Class<T> structInterface, int size) {
         ByteBufferProxyHandlerFactory<T> handlerFactory = ByteBufferProxyHandlerFactory.newHandlerFactory(structInterface);
         ByteBuffer data = ByteBuffer.allocate(handlerFactory.getStructSize() * size).order(ByteOrder.nativeOrder());
-        return new StructArrayByteBufferImpl<>(handlerFactory, size, data);
+        return new StructArrayByteBufferImpl<T>(handlerFactory, size, data);
     }
 
 }

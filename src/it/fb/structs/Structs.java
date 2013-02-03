@@ -28,7 +28,7 @@ public class Structs {
             POINTER_AT_METHOD = StructPointer.class.getMethod("at", Integer.TYPE);
             POINTER_GET_METHOD = StructPointer.class.getMethod("get");
             POINTER_OWNER_METHOD = StructPointer.class.getMethod("getOwner");
-        } catch (NoSuchMethodException | SecurityException ex) {
+        } catch (Exception ex) {
             throw new ExceptionInInitializerError(ex);
         }
     }
@@ -127,11 +127,11 @@ public class Structs {
 
         public static <T> StructArrayHashImpl<T> create(Class<T> structInterface, int size) {
             SStructDesc desc = Parser.parse(structInterface);
-            final Map<String, Object> values = new HashMap<>();
-            final Map<Method, SField> getters = new HashMap<>();
-            final Map<Method, SField> setters = new HashMap<>();
+            final Map<String, Object> values = new HashMap<String, Object>();
+            final Map<Method, SField> getters = new HashMap<Method, SField>();
+            final Map<Method, SField> setters = new HashMap<Method, SField>();
 
-            List<Map<String, Object>> data = new ArrayList<>();
+            List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
             for (int i = 0; i < size; i++) {
                 for (SField field : desc.getFields()) {
                     getters.put(field.getGetter(), field);
@@ -139,17 +139,17 @@ public class Structs {
                     if (field.getArrayLength() <= 1) {
                         values.put(field.getName(), field.accept(FieldValueVisitor));
                     } else {
-                        List<Object> list = new ArrayList<>(field.getArrayLength());
+                        List<Object> list = new ArrayList<Object>(field.getArrayLength());
                         for (int j = 0; j < field.getArrayLength(); j++) {
                             list.add(field.accept(FieldValueVisitor));
                         }
                         values.put(field.getName(), list);
                     }
                 }
-                data.add(new HashMap<>(values));
+                data.add(new HashMap<String, Object>(values));
             }
 
-            return new StructArrayHashImpl<>(structInterface, getters, setters, data);
+            return new StructArrayHashImpl<T>(structInterface, getters, setters, data);
         }
         
         private static SFieldVisitor<Object> FieldValueVisitor = new SFieldVisitor<Object>() {
