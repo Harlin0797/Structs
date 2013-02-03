@@ -93,5 +93,42 @@ public class ByteBufferAsmSAFTest {
         StructArray<MediumStruct> structArray = factory.newStructArray(MediumStruct.class, 16);
         assertEquals(16, structArray.getLength());
         assertEquals(84, structArray.getStructSize());
+        
+        StructPointer<MediumStruct> ptr = structArray.at(0);
+        for (int i = 0; i < structArray.getLength(); i++) {
+            try {
+                structArray.get(i).setI(i + 19);
+                ptr.at(i).get().setF(i + 1.5f);
+                MediumStruct cur = ptr.get();
+                for (int j = 0; j < 32; j++) {
+                    cur.setB(j, (byte)(i + j));
+                }
+                cur.getSimple().get().setI(i + 31);
+                cur.getSimple().get().setL(i + 58);
+                for (int j = 0; j < 32; j++) {
+                    cur.getSimple().get().setB(j, (byte)(i + j + 22));
+                }
+            } catch (RuntimeException ex) {
+                throw new IllegalArgumentException("Error on " + i, ex);
+            }
+        }
+        
+        for (int i = 0; i < structArray.getLength(); i++) {
+            try {
+                assertEquals(i + 19, structArray.get(i).getI());
+                assertEquals(i + 1.5f, ptr.at(i).get().getF(), 0.0f);
+                MediumStruct cur = ptr.get();
+                for (int j = 0; j < 32; j++) {
+                    assertEquals((byte)(i + j), cur.getB(j));
+                }
+                assertEquals(i + 31, cur.getSimple().get().getI());
+                assertEquals(i + 58, cur.getSimple().get().getL());
+                for (int j = 0; j < 32; j++) {
+                    assertEquals((byte)(i + j + 22), cur.getSimple().get().getB(j));
+                }
+            } catch (RuntimeException ex) {
+                throw new IllegalArgumentException("Error on " + i, ex);
+            }
+        }
     }
 }

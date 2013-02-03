@@ -30,7 +30,7 @@ public abstract class AbstractStructArrayFactory<D extends StructData> implement
         return getClassFactory(structInterface).wrap(data);
     }
     
-    private <T> AbstractStructArrayClassFactory<T> getClassFactory(Class<T> structInterface) {
+    protected <T> AbstractStructArrayClassFactory<T> getClassFactory(Class<T> structInterface) {
         AbstractStructArrayClassFactory<?> classFactory = classCache.get(structInterface);
         if (classFactory == null) {
             classFactory = newStructArrayClassFactory(structInterface);

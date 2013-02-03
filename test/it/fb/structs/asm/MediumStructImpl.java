@@ -16,10 +16,10 @@ public final class MediumStructImpl implements MediumStruct, StructPointer<Mediu
     private static final int SIZE = 928;
     private final StructData data;
     private final StructArray<SimpleStruct> owner;
-    private final SimpleStructImpl _Simple = null;
-    private final SimpleStructImpl _Simple2 = null;
-    private final SimpleStructImpl _Simple3 = null;
-    private final SimpleStructImpl _Simple4 = null;
+    private final SimpleStructImpl _Simple;
+    private final SimpleStructImpl _Simple2;
+    private final SimpleStructImpl _Simple3;
+    private final SimpleStructImpl _Simple4;
     private int baseOffset;
     private int position;
 
@@ -27,6 +27,10 @@ public final class MediumStructImpl implements MediumStruct, StructPointer<Mediu
         this.data = data;
         this.owner = owner;
         this.baseOffset = baseOffset;
+        this._Simple = new SimpleStructImpl(data, null, 36, 0);
+        this._Simple2 = new SimpleStructImpl(data, null, 86, 0);
+        this._Simple3 = new SimpleStructImpl(data, null, 66, 0);
+        this._Simple4 = new SimpleStructImpl(data, null, 16, 0);
         at(index);
     }
     
@@ -82,6 +86,7 @@ public final class MediumStructImpl implements MediumStruct, StructPointer<Mediu
 
     public void setBaseOffset(int baseOffset) {
         this.baseOffset = baseOffset;
+        this.position = baseOffset;
     }
 
     @Override

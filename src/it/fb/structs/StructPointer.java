@@ -22,6 +22,7 @@ public interface StructPointer<T> {
     public StructPointer<T> at(int index);
 
     /**
+     * TODO: REMOVE.
      * Retrieves the StructArray this pointer belongs to.
      * @return 
      */

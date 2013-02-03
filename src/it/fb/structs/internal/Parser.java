@@ -42,7 +42,7 @@ public class Parser {
                 if (fields.containsKey(propName)) {
                     SField f = fields.get(propName);
                     fields.put(propName, new SField(f.getType(),
-                            Math.max(length, f.getArrayLength()), propName, position, f.getGetter(), m));
+                            Math.max(length, f.getArrayLength()), propName, f.getPosition(), f.getGetter(), m));
                 } else {
                     fields.put(propName, new SField(SFieldType.typeOf(m.getParameterTypes()[m.getParameterTypes().length - 1]), 
                             length, propName, position, null, m));

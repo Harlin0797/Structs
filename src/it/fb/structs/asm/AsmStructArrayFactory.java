@@ -32,14 +32,14 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
     @Override
     protected <T> AbstractStructArrayClassFactory<T> newStructArrayClassFactory(Class<T> structInterface) {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS + ClassWriter.COMPUTE_FRAMES);
-        String name = Type.getInternalName(structInterface) + "$$Impl$$" + System.identityHashCode(this);
+        String internalName = Type.getInternalName(structInterface) + "$$Impl$$" + System.identityHashCode(this);
         cw.visit(V1_5, 
                 ACC_PUBLIC + ACC_FINAL + ACC_SUPER,
-                name,
+                internalName,
                 Type.getDescriptor(Object.class) + Type.getDescriptor(structInterface) + getGenericDescriptor(StructPointer.class, structInterface),
                 Type.getInternalName(Object.class),
                 new String[] { Type.getInternalName(structInterface), Type.getInternalName(StructPointer.class) });
-        Builder<T> builder = new Builder<>(dataFactory, structInterface, cw, name);
+        Builder<T> builder = new Builder<>(dataFactory, structInterface, cw, internalName);
         SStructDesc desc = Parser.parse(structInterface);
         OffsetVisitor ov = new OffsetVisitor(4);
         
@@ -222,9 +222,10 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
 
                 @Override
                 public Void visitStruct(SField field, SStructDesc structDesc) {
-                    childFields.add(new ChildFieldData(field, structDesc, offset, null));
+                    AbstractStructArrayClassFactory<?> childFactory = AsmStructArrayFactory.this.getClassFactory(structDesc.getJavaInterface());
+                    childFields.add(new ChildFieldData(field, offset, childFactory));
                     mv.visitVarInsn(ALOAD, 0);
-                    mv.visitFieldInsn(GETFIELD, internalName, "_" + field.getName(), Type.getDescriptor(StructPointer.class));
+                    mv.visitFieldInsn(GETFIELD, internalName, "_" + field.getName(), Type.getDescriptor(childFactory.getStructImplementation()));
                     mv.visitInsn(ARETURN);
                     mv.visitMaxs(1, 1);
                     return null;
@@ -316,10 +317,20 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 mv.visitCode();
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V");
-                // TODO: Inizializzazione children
-                //mv.visitVarInsn(ALOAD, 0);
-                //mv.visitInsn(ACONST_NULL);
-                //mv.visitFieldInsn(PUTFIELD, internalName, "_Simple", "Lit/fb/structs/asm/AsmStructPointer;");
+                for (ChildFieldData childField : childFields) {
+                    mv.visitVarInsn(ALOAD, 0);
+                    mv.visitTypeInsn(NEW, Type.getInternalName(childField.childClassFactory.getStructImplementation()));
+                    mv.visitInsn(DUP);
+                    mv.visitVarInsn(ALOAD, 1);
+                    mv.visitInsn(ACONST_NULL);
+                    visitInsnConst(mv, childField.offset);
+                    mv.visitInsn(ICONST_0);
+                    mv.visitMethodInsn(INVOKESPECIAL, 
+                            Type.getInternalName(childField.childClassFactory.getStructImplementation()), 
+                            "<init>",
+                            "(" + bcDescriptor + Type.getDescriptor(StructArray.class) + "II)V");
+                    mv.visitFieldInsn(PUTFIELD, internalName, "_" + childField.field.getName(), Type.getDescriptor(childField.childClassFactory.getStructImplementation()));
+                }
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitVarInsn(ALOAD, 1);
                 mv.visitFieldInsn(PUTFIELD, internalName, "data", bcDescriptor);
@@ -366,11 +377,13 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                     for (ChildFieldData childField : childFields) {
                         mv.visitVarInsn(ALOAD, 0);
                         mv.visitFieldInsn(GETFIELD, internalName, "_" + childField.field.getName(),
-                                Type.getDescriptor(StructPointer.class));
+                                Type.getDescriptor(childField.childClassFactory.getStructImplementation()));
                         mv.visitVarInsn(ILOAD, 2);
                         visitInsnConst(mv, childField.offset);
                         mv.visitInsn(IADD);
-                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(childField.structImplementation), "setBaseOffset", "(I)V");
+                        mv.visitMethodInsn(INVOKEVIRTUAL, 
+                                Type.getInternalName(childField.childClassFactory.getStructImplementation()), 
+                                "setBaseOffset", "(I)V");
                     }
                 }
                 mv.visitVarInsn(ALOAD, 0);
@@ -384,6 +397,9 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitVarInsn(ILOAD, 1);
                 mv.visitFieldInsn(PUTFIELD, internalName, "baseOffset", "I");
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitVarInsn(ILOAD, 1);
+                mv.visitFieldInsn(PUTFIELD, internalName, "position", "I");
                 mv.visitInsn(RETURN);
                 mv.visitMaxs(2, 2);
                 mv.visitEnd();
@@ -418,14 +434,15 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
             for (ChildFieldData childField : childFields) {
                 cw.visitField(ACC_PRIVATE + ACC_FINAL, 
                         "_" + childField.field.getName(),
-                        Type.getDescriptor(StructPointer.class),
-                        Type.getDescriptor(childField.structImplementation),
-                        null).visitEnd();
+                        Type.getDescriptor(childField.childClassFactory.getStructImplementation()),
+                        null, null).visitEnd();
             }
             cw.visitEnd();
             
             ClassLoader ccl = Thread.currentThread().getContextClassLoader();
-            Class<? extends T> implementation = (Class<? extends T>) loadInto(ccl, cw.toByteArray());
+            Class<? extends T> implementation = (Class<? extends T>) loadInto(ccl, 
+                    Type.getObjectType(internalName).getClassName(),
+                    cw.toByteArray());
             Constructor<?> constructor;
             try {
                 constructor = implementation.getDeclaredConstructor(
@@ -473,28 +490,26 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
     }
 
     @SuppressWarnings("UseSpecificCatch")
-    private static Class<?> loadInto(ClassLoader loader, byte[] classData) {
+    private static Class<?> loadInto(ClassLoader loader, String binaryName, byte[] classData) {
         try {
             Method defineClass = ClassLoader.class.getDeclaredMethod("defineClass", String.class, byte[].class, Integer.TYPE, Integer.TYPE);
             defineClass.setAccessible(true);
-            return Class.class.cast(defineClass.invoke(loader, null, classData, 0, classData.length));
+            return Class.class.cast(defineClass.invoke(loader, binaryName, classData, 0, classData.length));
         } catch (Exception ex) {
-            throw new IllegalStateException("Error forcing load of class to " + loader, ex);
+            throw new IllegalStateException("Error forcing load of class " + binaryName + " to " + loader, ex);
         }
     }
     
-    private static final class ChildFieldData {
+    private final class ChildFieldData {
 
         private final SField field;
-        private final SStructDesc struct;
         private final int offset;
-        private final Class<?> structImplementation;
+        private final AbstractStructArrayClassFactory<?> childClassFactory;
 
-        public ChildFieldData(SField field, SStructDesc struct, int offset, Class<?> structImplementation) {
+        public ChildFieldData(SField field, int offset, AbstractStructArrayClassFactory<?> childClassFactory) {
             this.field = field;
-            this.struct = struct;
             this.offset = offset;
-            this.structImplementation = structImplementation;
+            this.childClassFactory = childClassFactory;
         }
     }
 }
