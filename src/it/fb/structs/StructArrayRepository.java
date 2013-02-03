@@ -11,10 +11,18 @@ import it.fb.structs.internal.SStructDesc;
  *
  * @author Flavio
  */
-public class StructArrayRepository {
-    
-    public <T> StructArray<T> newStructArray(IStructArrayFactory.Builder.Factory ffactory, Class<T> structInterface, int length) {
-        Builder<T> builder = ffactory.newBuilder(structInterface);
+public class StructArrayRepository<D extends StructData> {
+
+    private final StructData.Factory<D> dataFactory;
+    private final IStructArrayFactory.Builder.Factory classFactory;
+
+    public StructArrayRepository(StructData.Factory<D> dataFactory, IStructArrayFactory.Builder.Factory classFactory) {
+        this.dataFactory = dataFactory;
+        this.classFactory = classFactory;
+    }
+
+    public <T> StructArray<T> newStructArray(Class<T> structInterface, int length) {
+        Builder<T, D> builder = classFactory.newBuilder(dataFactory, structInterface);
         SStructDesc desc = Parser.parse(structInterface);
         OffsetVisitor ov = new OffsetVisitor(4);
         
@@ -26,7 +34,7 @@ public class StructArrayRepository {
             }
         }
         
-        IStructArrayFactory<T> factory = builder.build(ov.getSize());
+        IStructArrayFactory<T, D> factory = builder.build(ov.getSize());
         return factory.newStructArray(length);
     }
     
