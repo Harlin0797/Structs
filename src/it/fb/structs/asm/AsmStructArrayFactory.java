@@ -85,6 +85,11 @@ public class AsmStructArrayFactory<T, D extends StructData> implements IStructAr
                 throw new IllegalStateException(ex);
             }
         }
+        
+        @Override
+        public void release() {
+            throw new UnsupportedOperationException("TODO");
+        }        
     }
     
     public static class Builder<T, D extends StructData> implements IStructArrayFactory.Builder<T, D> {

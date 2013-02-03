@@ -73,6 +73,11 @@ public class Structs {
             return createProxy(index, false);
         }
 
+        @Override
+        public void release() {
+            throw new UnsupportedOperationException("TODO");
+        }
+
         private T createProxy(int index, boolean settable) {
             if (settable) {
                 return (T) Proxy.newProxyInstance(structInterface.getClassLoader(), new Class[]{structInterface, StructPointer.class}, new StructArrayImplInvocationHandler(index));

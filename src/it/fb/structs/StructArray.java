@@ -26,4 +26,5 @@ public interface StructArray<T> {
      */
     StructPointer<T> at(int index);
 
+    void release();
 }

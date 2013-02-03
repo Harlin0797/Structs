@@ -41,6 +41,11 @@ public final class StructArrayByteBufferImpl<T> implements StructArray<T> {
         return handlerFactory.newPointerInstance(this, data, 0, index);
     }
 
+    @Override
+    public void release() {
+        throw new UnsupportedOperationException("TODO");
+    }
+
     public static <T> StructArrayByteBufferImpl<T> create(Class<T> structInterface, int size) {
         ByteBufferProxyHandlerFactory<T> handlerFactory = ByteBufferProxyHandlerFactory.newHandlerFactory(structInterface);
         ByteBuffer data = ByteBuffer.allocate(handlerFactory.getStructSize() * size).order(ByteOrder.nativeOrder());

@@ -7,6 +7,7 @@ import it.fb.structs.MediumStruct;
 import it.fb.structs.StructArray;
 import it.fb.structs.StructArrayRepository;
 import it.fb.structs.StructPointer;
+import it.fb.structs.UnsafeStructData;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +22,7 @@ public class ByteBufferAsmSAFTest {
     
     @Before
     public void setUp() {
-        sar = new StructArrayRepository(ByteBufferStructData.Plain.Native, AsmStructArrayFactory.Factory);
+        sar = new StructArrayRepository(UnsafeStructData.Factory, AsmStructArrayFactory.Factory);
     }
     
     @Test
