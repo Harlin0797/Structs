@@ -185,7 +185,7 @@ public class AsmStructArrayFactory<T, D extends StructData> implements IStructAr
 
                 @Override
                 public Void visitStruct(SField field, SStructDesc structDesc) {
-                    childFields.add(new ChildFieldData(field, structDesc, offset));
+                    childFields.add(new ChildFieldData(field, structDesc, offset, null));
                     mv.visitVarInsn(ALOAD, 0);
                     mv.visitFieldInsn(GETFIELD, internalName, "_" + field.getName(), Type.getDescriptor(StructPointer.class));
                     mv.visitInsn(ARETURN);
@@ -402,7 +402,7 @@ public class AsmStructArrayFactory<T, D extends StructData> implements IStructAr
         }
     }
     
-    public static IStructArrayFactory.Builder.Factory Factory = new IStructArrayFactory.Builder.Factory() {
+    public static IStructArrayFactory.Factory Factory = new IStructArrayFactory.Factory() {
         @Override
         public <T, D extends StructData> Builder<T, D> newBuilder(StructData.Factory<D> dataFactory, Class<T> structInterface) {
             ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS + ClassWriter.COMPUTE_FRAMES);

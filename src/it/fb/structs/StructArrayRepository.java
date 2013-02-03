@@ -14,9 +14,9 @@ import it.fb.structs.internal.SStructDesc;
 public class StructArrayRepository<D extends StructData> {
 
     private final StructData.Factory<D> dataFactory;
-    private final IStructArrayFactory.Builder.Factory classFactory;
+    private final IStructArrayFactory.Factory classFactory;
 
-    public StructArrayRepository(StructData.Factory<D> dataFactory, IStructArrayFactory.Builder.Factory classFactory) {
+    public StructArrayRepository(StructData.Factory<D> dataFactory, IStructArrayFactory.Factory classFactory) {
         this.dataFactory = dataFactory;
         this.classFactory = classFactory;
     }

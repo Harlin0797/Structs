@@ -17,10 +17,10 @@ public interface IStructArrayFactory<T, D extends StructData> {
         void addGetter(Method getter, SField field, int offset); 
         void addSetter(Method setter, SField field, int offset);
         IStructArrayFactory<T, D> build(int structSize);
-        
-        public interface Factory {
-            public <T, D extends StructData> Builder<T, D> newBuilder(StructData.Factory<D> factory, Class<T> structInterface);
-        }
     }
-    
+
+    public interface Factory {
+        public <T, D extends StructData> Builder<T, D> newBuilder(StructData.Factory<D> factory, Class<T> structInterface);
+    }
+
 }

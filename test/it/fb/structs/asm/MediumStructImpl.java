@@ -5,20 +5,21 @@ import it.fb.structs.SimpleStruct;
 import it.fb.structs.StructArray;
 import it.fb.structs.StructData;
 import it.fb.structs.StructPointer;
+import it.fb.structs.impl.SimpleStructImpl;
 
 /**
  *
  * @author Flavio
  */
-public final class MediumStructImpl implements MediumStruct, AsmStructPointer<MediumStruct> {
+public final class MediumStructImpl implements MediumStruct, StructPointer<MediumStruct> {
     
     private static final int SIZE = 928;
     private final StructData data;
     private final StructArray<SimpleStruct> owner;
-    private final AsmStructPointer<SimpleStruct> _Simple = null;
-    private final AsmStructPointer<SimpleStruct> _Simple2 = null;
-    private final AsmStructPointer<SimpleStruct> _Simple3 = null;
-    private final AsmStructPointer<SimpleStruct> _Simple4 = null;
+    private final SimpleStructImpl _Simple = null;
+    private final SimpleStructImpl _Simple2 = null;
+    private final SimpleStructImpl _Simple3 = null;
+    private final SimpleStructImpl _Simple4 = null;
     private int baseOffset;
     private int position;
 
@@ -79,7 +80,6 @@ public final class MediumStructImpl implements MediumStruct, AsmStructPointer<Me
         return this;
     }
 
-    @Override
     public void setBaseOffset(int baseOffset) {
         this.baseOffset = baseOffset;
     }
