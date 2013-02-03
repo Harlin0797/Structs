@@ -3,6 +3,7 @@ package it.fb.structs.internal;
 import it.fb.structs.Field;
 import java.beans.Introspector;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -16,6 +17,10 @@ import java.util.Map;
  */
 public class Parser {
     
+    public static SStructDesc parse(Type structInterface) {
+        return parse((Class<?>) structInterface);
+    }
+
     public static SStructDesc parse(Class<?> structInterface) {
         Map<String, SField> fields = new LinkedHashMap<>();
         for (Method m : structInterface.getDeclaredMethods()) {
@@ -29,7 +34,7 @@ public class Parser {
                     fields.put(propName, new SField(f.getType(),
                             Math.max(length, f.getArrayLength()), propName, position, m, f.getSetter()));
                 } else {
-                    fields.put(propName, new SField(SFieldType.typeOf(m.getReturnType()), 
+                    fields.put(propName, new SField(SFieldType.typeOf(m.getGenericReturnType()), 
                             length, propName, position, m, null));
                 }
             } else if (isSetter(m) || isArraySetter(m)) {

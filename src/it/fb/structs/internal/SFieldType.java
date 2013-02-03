@@ -1,5 +1,9 @@
 package it.fb.structs.internal;
 
+import it.fb.structs.StructPointer;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+
 /**
  *
  * @author Flavio
@@ -23,7 +27,7 @@ public abstract class SFieldType {
         T visitDouble();
     }
     
-    public static SFieldType typeOf(Class<?> javaType) {
+    public static SFieldType typeOf(Type javaType) {
         if (javaType == Byte.TYPE) {
             return STypeByte;
         } else if (javaType == Short.TYPE) {
@@ -38,8 +42,9 @@ public abstract class SFieldType {
             return STypeFloat;
         } else if (javaType == Double.TYPE) {
             return STypeDouble;
-        } else if (javaType.isInterface()) {
-            return new STypeStruct(Parser.parse(javaType));
+        } else if (javaType instanceof ParameterizedType 
+                && (StructPointer.class.equals(((ParameterizedType)javaType).getRawType()))) {
+            return new STypeStruct(Parser.parse(((ParameterizedType)javaType).getActualTypeArguments()[0]));
         } else {
             throw new UnsupportedOperationException("Unsupported type: " + javaType);
         }

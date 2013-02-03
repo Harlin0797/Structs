@@ -7,7 +7,6 @@ import it.fb.structs.MediumStruct;
 import it.fb.structs.StructArray;
 import it.fb.structs.StructArrayRepository;
 import it.fb.structs.StructPointer;
-import it.fb.structs.UnsafeStructData;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +21,7 @@ public class ByteBufferAsmSAFTest {
     
     @Before
     public void setUp() {
-        sar = new StructArrayRepository(UnsafeStructData.Factory, AsmStructArrayFactory.Factory);
+        sar = new StructArrayRepository(ByteBufferStructData.Plain.Native, AsmStructArrayFactory.Factory);
     }
     
     @Test
@@ -33,11 +32,15 @@ public class ByteBufferAsmSAFTest {
         
         StructPointer<BasicStruct> ptr = structArray.at(0);
         for (int i = 0; i < 32; i++) {
-            structArray.get(i).setI(i + 12);
-            ptr.at(i).get().setL(i + 123L);
-            ptr.get().setB((byte) (i + 11));
-            ptr.get().setS((short) (i + 412));
-            ptr.get().setF(3.0f * i);
+            try {
+                structArray.get(i).setI(i + 12);
+                ptr.at(i).get().setL(i + 123L);
+                ptr.get().setB((byte) (i + 11));
+                ptr.get().setS((short) (i + 412));
+                ptr.get().setF(3.0f * i);
+            } catch (RuntimeException ex) {
+                throw new IllegalArgumentException("Error on " + i, ex);
+            }
         }
         
         for (int i = 0; i < structArray.getLength(); i++) {

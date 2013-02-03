@@ -19,6 +19,6 @@ public interface MediumStruct {
     void setB(int index, byte value);
     
     @Field(position=3)
-    SimpleStruct getSimple();
+    StructPointer<SimpleStruct> getSimple();
     
 }

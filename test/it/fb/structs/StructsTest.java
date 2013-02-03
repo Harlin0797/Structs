@@ -75,11 +75,11 @@ public class StructsTest {
         StructPointer<MediumStruct> ptr = array.at(0);
         for (int i = 0; i < array.getLength(); i++) {
             ptr.at(i).get().setI(i);
-            ptr.get().getSimple().setL(i * 2L);
+            ptr.get().getSimple().get().setL(i * 2L);
         }
         for (int i = 0; i < array.getLength(); i++) {
             assertEquals(i, ptr.at(i).get().getI());
-            assertEquals(i * 2L, ptr.get().getSimple().getL());
+            assertEquals(i * 2L, ptr.get().getSimple().get().getL());
         }
     }
 }
