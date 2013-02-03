@@ -3,9 +3,9 @@ package it.fb.structs.asm;
 import it.fb.structs.ArrayStruct;
 import it.fb.structs.BasicStruct;
 import it.fb.structs.ByteBufferStructData;
+import it.fb.structs.IStructArrayFactory;
 import it.fb.structs.MediumStruct;
 import it.fb.structs.StructArray;
-import it.fb.structs.StructArrayRepository;
 import it.fb.structs.StructPointer;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -17,16 +17,16 @@ import org.junit.Test;
  */
 public class ByteBufferAsmSAFTest {
     
-    private StructArrayRepository sar;
+    private IStructArrayFactory<?> factory;
     
     @Before
     public void setUp() {
-        sar = new StructArrayRepository(ByteBufferStructData.Plain.Native, AsmStructArrayFactory.Factory);
+        factory = AsmStructArrayFactory.newInstance(ByteBufferStructData.Plain.Native);
     }
     
     @Test
     public void testBasicStruct() {
-        StructArray<BasicStruct> structArray = sar.newStructArray(BasicStruct.class, 32);
+        StructArray<BasicStruct> structArray = factory.newStructArray(BasicStruct.class, 32);
         assertEquals(32, structArray.getLength());
         assertEquals(36, structArray.getStructSize());
         
@@ -54,7 +54,7 @@ public class ByteBufferAsmSAFTest {
 
     @Test
     public void testArrayStruct() {
-        StructArray<ArrayStruct> structArray = sar.newStructArray(ArrayStruct.class, 16);
+        StructArray<ArrayStruct> structArray = factory.newStructArray(ArrayStruct.class, 16);
         assertEquals(16, structArray.getLength());
         assertEquals(928, structArray.getStructSize());
         
@@ -90,7 +90,7 @@ public class ByteBufferAsmSAFTest {
     
     @Test
     public void testMediumStruct() {
-        StructArray<MediumStruct> structArray = sar.newStructArray(MediumStruct.class, 16);
+        StructArray<MediumStruct> structArray = factory.newStructArray(MediumStruct.class, 16);
         assertEquals(16, structArray.getLength());
         assertEquals(84, structArray.getStructSize());
     }

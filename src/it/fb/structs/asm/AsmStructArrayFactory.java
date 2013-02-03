@@ -1,9 +1,12 @@
 package it.fb.structs.asm;
 
+import it.fb.structs.IStructArrayFactory;
 import it.fb.structs.StructArray;
 import it.fb.structs.StructData;
 import it.fb.structs.StructPointer;
-import it.fb.structs.internal.IStructArrayFactory;
+import it.fb.structs.bytebuffer.OffsetVisitor;
+import it.fb.structs.impl.AbstractStructArrayFactory;
+import it.fb.structs.internal.Parser;
 import it.fb.structs.internal.SField;
 import it.fb.structs.internal.SField.SFieldVisitor;
 import it.fb.structs.internal.SStructDesc;
@@ -20,80 +23,115 @@ import org.objectweb.asm.Type;
  *
  * @author Flavio
  */
-public class AsmStructArrayFactory<T, D extends StructData> implements IStructArrayFactory<T, D> {
+public class AsmStructArrayFactory<D extends StructData> extends AbstractStructArrayFactory<D> {
     
-    private final StructData.Factory<D> dataFactory;
-    private final Class<T> structInterface;
-    private final Class<? extends T> structImplementation;
-    private final Constructor<?> constructor;
-    private final int structSize;
-
-    public AsmStructArrayFactory(StructData.Factory<D> dataFactory, Class<T> structInterface, Class<? extends T> structImplementation, Constructor<?> constructor, int structSize) {
-        this.dataFactory = dataFactory;
-        this.structInterface = structInterface;
-        this.structImplementation = structImplementation;
-        this.constructor = constructor;
-        this.structSize = structSize;
-    }
-    
-    @Override
-    public StructArray<T> newStructArray(int length) {
-        D dataBuffer = dataFactory.newBuffer(length * structSize);
-        return new StructArrayImpl(dataBuffer, length);
+    public AsmStructArrayFactory(StructData.Factory<D> dataFactory) {
+        super(dataFactory);
     }
 
     @Override
-    public StructArray<T> wrap(D data) {
-        throw new UnsupportedOperationException("TODO");
+    protected <T> AbstractStructArrayClassFactory<T> newStructArrayClassFactory(Class<T> structInterface) {
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS + ClassWriter.COMPUTE_FRAMES);
+        String name = Type.getInternalName(structInterface) + "$$Impl$$" + System.identityHashCode(this);
+        cw.visit(V1_5, 
+                ACC_PUBLIC + ACC_FINAL + ACC_SUPER,
+                name,
+                Type.getDescriptor(Object.class) + Type.getDescriptor(structInterface) + getGenericDescriptor(StructPointer.class, structInterface),
+                Type.getInternalName(Object.class),
+                new String[] { Type.getInternalName(structInterface), Type.getInternalName(StructPointer.class) });
+        Builder<T> builder = new Builder<>(dataFactory, structInterface, cw, name);
+        SStructDesc desc = Parser.parse(structInterface);
+        OffsetVisitor ov = new OffsetVisitor(4);
+        
+        for (SField field : desc.getFields()) {
+            int fieldOffset = field.accept(ov);
+            builder.addGetter(field.getGetter(), field, fieldOffset);
+            if (field.getSetter() != null) {
+                builder.addSetter(field.getSetter(), field, fieldOffset);
+            }
+        }
+        
+        return builder.build(ov.getSize());
     }
 
-    private class StructArrayImpl implements StructArray<T> {
-        
-        private final D data;
-        private final int length;
+    private class AsmStructArrayClassFactory<T> extends AbstractStructArrayClassFactory<T> {
 
-        public StructArrayImpl(D data, int length) {
-            this.data = data;
-            this.length = length;
+        private final Class<T> structInterface;
+        private final Class<? extends T> structImplementation;
+        private final Constructor<?> constructor;
+        private final int structSize;
+
+        public AsmStructArrayClassFactory(Class<T> structInterface, Class<? extends T> structImplementation, Constructor<?> constructor, int structSize) {
+            this.structInterface = structInterface;
+            this.structImplementation = structImplementation;
+            this.constructor = constructor;
+            this.structSize = structSize;
         }
 
         @Override
-        public int getLength() {
-            return length;
+        public StructArray<T> newStructArray(int length) {
+            D dataBuffer = dataFactory.newBuffer(length * structSize);
+            return new StructArrayImpl(dataBuffer, length);
         }
 
         @Override
-        public int getStructSize() {
-            return structSize;
-        }
-
-        @Override
-        @SuppressWarnings("UseSpecificCatch")
-        public T get(int index) {
-            try {
-                return structInterface.cast(constructor.newInstance(data, this, 0, index));
-            } catch (Exception ex) {
-                throw new IllegalStateException(ex);
-            }
-        }
-
-        @Override
-        @SuppressWarnings("UseSpecificCatch")
-        public StructPointer<T> at(int index) {
-            try {
-                return StructPointer.class.cast(constructor.newInstance(data, this, 0, index));
-            } catch (Exception ex) {
-                throw new IllegalStateException(ex);
-            }
-        }
-        
-        @Override
-        public void release() {
+        public StructArray<T> wrap(D data) {
             throw new UnsupportedOperationException("TODO");
-        }        
+        }
+
+        @Override
+        public Class<? extends T> getStructImplementation() {
+            return structImplementation;
+        }
+
+        private class StructArrayImpl implements StructArray<T> {
+
+            private final D data;
+            private final int length;
+
+            public StructArrayImpl(D data, int length) {
+                this.data = data;
+                this.length = length;
+            }
+
+            @Override
+            public int getLength() {
+                return length;
+            }
+
+            @Override
+            public int getStructSize() {
+                return structSize;
+            }
+
+            @Override
+            @SuppressWarnings("UseSpecificCatch")
+            public T get(int index) {
+                try {
+                    return structInterface.cast(constructor.newInstance(data, this, 0, index));
+                } catch (Exception ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+
+            @Override
+            @SuppressWarnings("UseSpecificCatch")
+            public StructPointer<T> at(int index) {
+                try {
+                    return StructPointer.class.cast(constructor.newInstance(data, this, 0, index));
+                } catch (Exception ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+
+            @Override
+            public void release() {
+                throw new UnsupportedOperationException("TODO");
+            }        
+        }
     }
     
-    public static class Builder<T, D extends StructData> implements IStructArrayFactory.Builder<T, D> {
+    private class Builder<T> {
 
         private final StructData.Factory<D> dataFactory;        
         private final Class<T> structInterface;
@@ -117,7 +155,6 @@ public class AsmStructArrayFactory<T, D extends StructData> implements IStructAr
             this.invokeOpcode = dataFactory.getBufferClass().isInterface() ? INVOKEINTERFACE : INVOKEVIRTUAL;
         }
 
-        @Override
         public void addGetter(Method getter, SField field, final int offset) {
             final MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, getter.getName(), Type.getMethodDescriptor(getter), null, null);
             mv.visitCode();
@@ -197,7 +234,6 @@ public class AsmStructArrayFactory<T, D extends StructData> implements IStructAr
             mv.visitEnd();
         }
 
-        @Override
         public void addSetter(Method setter, SField field, final int offset) {
             final MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, setter.getName(), Type.getMethodDescriptor(setter), null, null);
             mv.visitCode();
@@ -272,8 +308,7 @@ public class AsmStructArrayFactory<T, D extends StructData> implements IStructAr
             mv.visitEnd();
         }
 
-        @Override
-        public IStructArrayFactory<T, D> build(int structSize) {
+        public AsmStructArrayClassFactory<T> build(int structSize) {
             {
                 MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", 
                         "(" + bcDescriptor + Type.getDescriptor(StructArray.class) + "II)V",
@@ -281,10 +316,10 @@ public class AsmStructArrayFactory<T, D extends StructData> implements IStructAr
                 mv.visitCode();
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V");
-                mv.visitVarInsn(ALOAD, 0);
                 // TODO: Inizializzazione children
-                mv.visitInsn(ACONST_NULL);
-                mv.visitFieldInsn(PUTFIELD, internalName, "_Simple", "Lit/fb/structs/asm/AsmStructPointer;");
+                //mv.visitVarInsn(ALOAD, 0);
+                //mv.visitInsn(ACONST_NULL);
+                //mv.visitFieldInsn(PUTFIELD, internalName, "_Simple", "Lit/fb/structs/asm/AsmStructPointer;");
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitVarInsn(ALOAD, 1);
                 mv.visitFieldInsn(PUTFIELD, internalName, "data", bcDescriptor);
@@ -395,28 +430,17 @@ public class AsmStructArrayFactory<T, D extends StructData> implements IStructAr
             try {
                 constructor = implementation.getDeclaredConstructor(
                         dataFactory.getBufferClass(), StructArray.class, Integer.TYPE, Integer.TYPE);
-            } catch (Exception ex) {
+            } catch (NoSuchMethodException | SecurityException ex) {
                 throw new IllegalStateException(ex);
             }
-            return new AsmStructArrayFactory<>(dataFactory, structInterface, implementation, constructor, structSize);
+            return new AsmStructArrayClassFactory<>(structInterface, implementation, constructor, structSize);
         }
     }
-    
-    public static IStructArrayFactory.Factory Factory = new IStructArrayFactory.Factory() {
-        @Override
-        public <T, D extends StructData> Builder<T, D> newBuilder(StructData.Factory<D> dataFactory, Class<T> structInterface) {
-            ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS + ClassWriter.COMPUTE_FRAMES);
-            String name = Type.getInternalName(structInterface) + "$$Impl$$" + System.identityHashCode(cw);
-            cw.visit(V1_5, 
-                    ACC_PUBLIC + ACC_FINAL + ACC_SUPER,
-                    name,
-                    Type.getDescriptor(Object.class) + Type.getDescriptor(structInterface) + getGenericDescriptor(StructPointer.class, structInterface),
-                    Type.getInternalName(Object.class),
-                    new String[] { Type.getInternalName(structInterface), Type.getInternalName(StructPointer.class) });
-            return new Builder<>(dataFactory, structInterface, cw, name);
-        }
-    };
-    
+
+    public static <D extends StructData> IStructArrayFactory<D> newInstance(StructData.Factory<D> factory) {
+        return new AsmStructArrayFactory<>(factory);
+    }
+
     private static String getGenericDescriptor(Class<?> outerClass, Class<?> innerClass) {
         String outerDesc = Type.getDescriptor(outerClass);
         String innerDesc = Type.getDescriptor(innerClass);
