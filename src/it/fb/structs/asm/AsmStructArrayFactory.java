@@ -124,8 +124,8 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
 
             @Override
             public void release() {
-                throw new UnsupportedOperationException("TODO");
-            }        
+                data.release();
+            }
         }
     }
     

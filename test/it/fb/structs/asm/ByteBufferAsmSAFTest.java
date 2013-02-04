@@ -24,6 +24,7 @@ public class ByteBufferAsmSAFTest {
     @Before
     public void setUp() {
         factory = AsmStructArrayFactory.newInstance(ByteBufferStructData.Plain.Native);
+        //factory = AsmStructArrayFactory.newInstance(UnsafeStructData.Factory);
     }
     
     @Test

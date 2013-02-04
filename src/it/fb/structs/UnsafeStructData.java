@@ -92,7 +92,12 @@ public final class UnsafeStructData implements StructData {
     public void putDouble(int position, double value) {
         unsafe.putDouble(baseAddress + position, value);
     }
-    
+
+    @Override
+    public void release() {
+        unsafe.freeMemory(baseAddress);
+    }
+
     public static StructData.Factory<UnsafeStructData> Factory = new StructData.Factory<UnsafeStructData>() {
         
         private final Unsafe TheUnsafe;

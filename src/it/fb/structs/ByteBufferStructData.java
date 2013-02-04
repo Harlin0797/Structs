@@ -89,7 +89,11 @@ public final class ByteBufferStructData implements StructData {
     public void putDouble(int index, double value) {
         buffer.putDouble(index, value);
     }
-    
+
+    @Override
+    public void release() {
+    }
+
     public static class Plain implements StructData.Factory<ByteBufferStructData> {
         public static final StructData.Factory<ByteBufferStructData> Native 
                 = new Plain(ByteOrder.nativeOrder());
