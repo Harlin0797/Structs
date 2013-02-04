@@ -11,7 +11,7 @@ public interface ComplexStruct {
     void setI(int value);
     
     @Field(position=1, length=8)
-    StructPointer<MediumStruct> getSimple(int index);
+    StructPointer<MediumStruct> getMedium(int index);
     
     @Field(position=2, length=16)
     double getD(int index);

@@ -69,6 +69,10 @@ public final class MediumStructImpl implements MediumStruct, StructPointer<Mediu
         return _Simple;
     }
 
+    public StructPointer<SimpleStruct> getSimple(int index) {
+        return _Simple.at(index);
+    }
+
     @Override
     public MediumStruct get() {
         return this;

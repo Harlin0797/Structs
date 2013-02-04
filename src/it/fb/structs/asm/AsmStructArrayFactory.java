@@ -224,8 +224,13 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                     childFields.add(new ChildFieldData(field, offset, childFactory));
                     mv.visitVarInsn(ALOAD, 0);
                     mv.visitFieldInsn(GETFIELD, internalName, "_" + field.getName(), Type.getDescriptor(childFactory.getStructImplementation()));
+                    if (field.isArray()) {
+                        mv.visitVarInsn(ILOAD, 1);
+                        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(childFactory.getStructImplementation()), 
+                                "at", "(I)" + Type.getDescriptor(StructPointer.class));                        
+                    }
                     mv.visitInsn(ARETURN);
-                    mv.visitMaxs(1, 1);
+                    mv.visitMaxs(2, 2);
                     return null;
                 }
             });

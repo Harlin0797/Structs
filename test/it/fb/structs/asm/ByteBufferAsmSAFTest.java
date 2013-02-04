@@ -3,6 +3,7 @@ package it.fb.structs.asm;
 import it.fb.structs.ArrayStruct;
 import it.fb.structs.BasicStruct;
 import it.fb.structs.ByteBufferStructData;
+import it.fb.structs.ComplexStruct;
 import it.fb.structs.IStructArrayFactory;
 import it.fb.structs.MediumStruct;
 import it.fb.structs.StructArray;
@@ -128,6 +129,53 @@ public class ByteBufferAsmSAFTest {
                 }
             } catch (RuntimeException ex) {
                 throw new IllegalArgumentException("Error on " + i, ex);
+            }
+        }
+    }
+    
+    @Test
+    public void testComplexStruct() {
+        StructArray<ComplexStruct> structArray = factory.newStructArray(ComplexStruct.class, 8);
+        assertEquals(8, structArray.getLength());
+        assertEquals(804, structArray.getStructSize());
+        
+        for (int i = 0; i < structArray.getLength(); i++) {
+            StructPointer<ComplexStruct> ptr = structArray.at(i);
+            StructPointer<MediumStruct> medPtr = ptr.get().getMedium(0);
+            ptr.get().setI(i);
+            for (int j = 0; j < 8; j++) {
+                MediumStruct medStr = medPtr.at(j).get();
+                medStr.setF(i + j * 63.0f);
+                medStr.setI(i + j * 6);
+                medStr.getSimple().get().setI(i + j * 8); 
+                medStr.getSimple().get().setL(i + j * 49L); 
+                for (int k = 0; k < 32; k++) {
+                    medStr.setB(k, (byte) (i + j + k));
+                    medStr.getSimple().get().setB(k, (byte) (i * 2 + j * 3 + k * 4));
+                }
+            }
+            for (int j = 0; j < 16; j++) {
+                ptr.get().setD(j, i + j * 12.3);
+            }
+        }
+
+        for (int i = 0; i < structArray.getLength(); i++) {
+            StructPointer<ComplexStruct> ptr = structArray.at(i);
+            StructPointer<MediumStruct> medPtr = ptr.get().getMedium(0);
+            assertEquals(i, ptr.get().getI());
+            for (int j = 0; j < 8; j++) {
+                MediumStruct medStr = medPtr.at(j).get();
+                assertEquals(i + j * 63.0f, medPtr.at(j).get().getF(), 0.0f);
+                assertEquals(i + j * 6, medStr.getI());
+                assertEquals(i + j * 8, medStr.getSimple().get().getI()); 
+                assertEquals(i + j * 49L, medStr.getSimple().get().getL()); 
+                for (int k = 0; k < 32; k++) {
+                    assertEquals((byte) (i + j + k), medStr.getB(k));
+                    assertEquals((byte) (i * 2 + j * 3 + k * 4), medStr.getSimple().get().getB(k));
+                }
+            }
+            for (int j = 0; j < 16; j++) {
+                assertEquals(i + j * 12.3, ptr.get().getD(j), 0.0);
             }
         }
     }
