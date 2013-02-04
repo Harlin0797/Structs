@@ -424,7 +424,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 mv.visitEnd();
             }
             {
-                MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getLength", "()I", null, null);
+                MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "length", "()I", null, null);
                 mv.visitCode();
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitVarInsn(ALOAD, 0);
@@ -434,18 +434,89 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 mv.visitEnd();
             }
             {
-                MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getStructSize", "()I", null, null);
+                MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "structSize", "()I", null, null);
                 mv.visitCode();
                 visitInsnConst(mv, structSize);
                 mv.visitInsn(IRETURN);
                 mv.visitMaxs(1, 1);
                 mv.visitEnd();
-            }            
+            }
+            {
+                MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "index", "()I", null, null);
+                mv.visitCode();
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitFieldInsn(GETFIELD, internalName, "position", "I");
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitFieldInsn(GETFIELD, internalName, "baseOffset", "I");
+                visitInsnConst(mv, structSize);
+                mv.visitInsn(IDIV);
+                mv.visitInsn(ISUB);
+                mv.visitInsn(IRETURN);
+                mv.visitMaxs(3, 1);
+                mv.visitEnd();
+            }
+            {
+                MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "duplicate", 
+                        "()" + Type.getObjectType(internalName).getDescriptor(),
+                        null, null);
+                mv.visitCode();
+                mv.visitTypeInsn(NEW, internalName);
+                mv.visitInsn(DUP);
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitFieldInsn(GETFIELD, internalName, "data", bcDescriptor);
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitFieldInsn(GETFIELD, internalName, "owner", Type.getDescriptor(StructArray.class));
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitFieldInsn(GETFIELD, internalName, "length", "I");
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitFieldInsn(GETFIELD, internalName, "baseOffset", "I");
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitMethodInsn(INVOKEVIRTUAL, internalName, "index", "()I");
+                mv.visitMethodInsn(INVOKESPECIAL, internalName, "<init>", 
+                        "(" + bcDescriptor + Type.getDescriptor(StructArray.class) + "III)V");
+                mv.visitInsn(ARETURN);
+                mv.visitMaxs(7, 1);
+                mv.visitEnd();
+            }
+            {
+                MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "pin", 
+                        "()" + Type.getObjectType(internalName).getDescriptor(),
+                        null, null);
+                mv.visitCode();
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitMethodInsn(INVOKEVIRTUAL, internalName, "duplicate", 
+                        "()" + Type.getObjectType(internalName).getDescriptor());
+                mv.visitInsn(ARETURN);
+                mv.visitMaxs(1, 1);
+                mv.visitEnd();
+            }
             {
                 MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_BRIDGE + ACC_SYNTHETIC, "get", "()Ljava/lang/Object;", null, null);
                 mv.visitCode();
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitMethodInsn(INVOKEVIRTUAL, internalName, "get", "()" + Type.getDescriptor(structInterface));
+                mv.visitInsn(ARETURN);
+                mv.visitMaxs(1, 1);
+                mv.visitEnd();
+            }
+            {
+                MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_BRIDGE + ACC_SYNTHETIC, 
+                        "duplicate", "()" + Type.getDescriptor(StructPointer.class), null, null);
+                mv.visitCode();
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitMethodInsn(INVOKEVIRTUAL, internalName, "duplicate", 
+                        "()" + Type.getObjectType(internalName).getDescriptor());
+                mv.visitInsn(ARETURN);
+                mv.visitMaxs(1, 1);
+                mv.visitEnd();
+            }
+            {
+                MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_BRIDGE + ACC_SYNTHETIC, 
+                        "pin", "()" + Type.getDescriptor(Object.class), null, null);
+                mv.visitCode();
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitMethodInsn(INVOKEVIRTUAL, internalName, "pin", 
+                        "()" + Type.getObjectType(internalName).getDescriptor());
                 mv.visitInsn(ARETURN);
                 mv.visitMaxs(1, 1);
                 mv.visitEnd();

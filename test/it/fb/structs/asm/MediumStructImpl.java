@@ -29,10 +29,10 @@ public final class MediumStructImpl implements MediumStruct, StructPointer<Mediu
         this.owner = owner;
         this.length = length;
         this.baseOffset = baseOffset;
-        this._Simple = new SimpleStructImpl(data, null, 36, 0);
-        this._Simple2 = new SimpleStructImpl(data, null, 86, 0);
-        this._Simple3 = new SimpleStructImpl(data, null, 66, 0);
-        this._Simple4 = new SimpleStructImpl(data, null, 16, 0);
+        this._Simple = new SimpleStructImpl(data, null, 1, 36, 0);
+        this._Simple2 = new SimpleStructImpl(data, null, 1, 86, 0);
+        this._Simple3 = new SimpleStructImpl(data, null, 1, 66, 0);
+        this._Simple4 = new SimpleStructImpl(data, null, 1, 16, 0);
         at(index);
     }
     
@@ -101,12 +101,27 @@ public final class MediumStructImpl implements MediumStruct, StructPointer<Mediu
     }
 
     @Override
-    public int getLength() {
+    public int length() {
         return length;
     }
 
     @Override
-    public int getStructSize() {
+    public int structSize() {
         return SIZE;
+    }
+
+    @Override
+    public MediumStructImpl duplicate() {
+        return new MediumStructImpl(data, owner, length, baseOffset, index());
+    }
+
+    @Override
+    public int index() {
+        return position - baseOffset / SIZE;
+    }
+    
+    @Override
+    public MediumStructImpl pin() {
+        return duplicate();
     }
 }

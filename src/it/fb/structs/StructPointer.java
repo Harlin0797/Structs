@@ -32,13 +32,13 @@ public interface StructPointer<T> {
      * Retrieves the number of elements in the array this pointer points to.
      * @return The number of elements in the array; always positive.
      */
-    int getLength();
+    int length();
 
     /**
      * Retrieves the size in bytes of each element in the array.
      * @return The size in bytes of each element in the array; always positive.
      */
-    int getStructSize();
+    int structSize();
 
     /**
      * Copies the data pointer by the <i>source</i> pointer into the
@@ -53,7 +53,19 @@ public interface StructPointer<T> {
      * data currently pointed by the receiver.
      * @return A new long-lived instance of T
      */
-    //public T pin();
+    public T pin();
 
-    //public StructPointer<T> duplicate();
+    /**
+     * Creates a <b>new</b> <code>StructPointer</code>, duplicate of the receiver.
+     * The new pointer points to the same item as the original. The new pointer will
+     * not be moved by father pointers; its position is controlled only by the user.
+     * @return A new pointer to the same item as the original
+     */
+    public StructPointer<T> duplicate();
+    
+    /**
+     * Returns the index of the array the receiver is currently pointing to.
+     * @return The index the receiver is pointing to; between 0 (included) and length(excluded).
+     */
+    public int index();
 }

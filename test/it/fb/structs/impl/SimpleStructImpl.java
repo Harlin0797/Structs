@@ -1,9 +1,11 @@
 package it.fb.structs.impl;
 
+import it.fb.structs.MediumStruct;
 import it.fb.structs.SimpleStruct;
 import it.fb.structs.StructArray;
 import it.fb.structs.StructData;
 import it.fb.structs.StructPointer;
+import it.fb.structs.asm.MediumStructImpl;
 
 /**
  *
@@ -14,12 +16,14 @@ public final class SimpleStructImpl implements SimpleStruct, StructPointer<Simpl
     private static final int SIZE = 928;
     private final StructData data;
     private final StructArray<SimpleStruct> owner;
+    private final int length;
     private int baseOffset;
     private int position;
 
-    public SimpleStructImpl(StructData data, StructArray<SimpleStruct> owner, int baseOffset, int index) {
+    public SimpleStructImpl(StructData data, StructArray<SimpleStruct> owner, int length, int baseOffset, int index) {
         this.data = data;
         this.owner = owner;
+        this.length = length;
         this.baseOffset = baseOffset;
         at(index);
     }
@@ -100,12 +104,28 @@ public final class SimpleStructImpl implements SimpleStruct, StructPointer<Simpl
     }
 
     @Override
-    public int getLength() {
+    public int length() {
         return data.getSize() / SIZE;
     }
 
     @Override
-    public int getStructSize() {
+    public int structSize() {
         return SIZE;
     }
+    
+    @Override
+    public SimpleStructImpl duplicate() {
+        return new SimpleStructImpl(data, owner, length, baseOffset, index());
+    }
+
+    @Override
+    public int index() {
+        return position - baseOffset / SIZE;
+    }
+
+    @Override
+    public SimpleStruct pin() {
+        return duplicate();
+    }
+    
 }

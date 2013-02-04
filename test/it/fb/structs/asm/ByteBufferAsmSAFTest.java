@@ -6,6 +6,7 @@ import it.fb.structs.ByteBufferStructData;
 import it.fb.structs.ComplexStruct;
 import it.fb.structs.IStructArrayFactory;
 import it.fb.structs.MediumStruct;
+import it.fb.structs.SimpleStruct;
 import it.fb.structs.StructArray;
 import it.fb.structs.StructPointer;
 import static org.junit.Assert.*;
@@ -30,10 +31,10 @@ public class ByteBufferAsmSAFTest {
         StructArray<MediumStruct> structArray = factory.newStructArray(MediumStruct.class, 32);
         assertEquals(32, structArray.getLength());
         assertEquals(84, structArray.getStructSize());
-        assertEquals(32, structArray.at(0).getLength());
-        assertEquals(84, structArray.at(0).getStructSize());
-        assertEquals(1,  structArray.at(0).get().getSimple().getLength());
-        assertEquals(44, structArray.at(0).get().getSimple().getStructSize());
+        assertEquals(32, structArray.at(0).length());
+        assertEquals(84, structArray.at(0).structSize());
+        assertEquals(1,  structArray.at(0).get().getSimple().length());
+        assertEquals(44, structArray.at(0).get().getSimple().structSize());
     }
 
     @Test
@@ -41,10 +42,10 @@ public class ByteBufferAsmSAFTest {
         StructArray<ComplexStruct> structArray = factory.newStructArray(ComplexStruct.class, 32);
         assertEquals(32, structArray.getLength());
         assertEquals(804, structArray.getStructSize());
-        assertEquals(32, structArray.at(0).getLength());
-        assertEquals(804, structArray.at(0).getStructSize());
-        assertEquals(8, structArray.at(0).get().getMedium(0).getLength());
-        assertEquals(84, structArray.at(0).get().getMedium(0).getStructSize());
+        assertEquals(32, structArray.at(0).length());
+        assertEquals(804, structArray.at(0).structSize());
+        assertEquals(8, structArray.at(0).get().getMedium(0).length());
+        assertEquals(84, structArray.at(0).get().getMedium(0).structSize());
     }
 
     @Test
@@ -200,5 +201,18 @@ public class ByteBufferAsmSAFTest {
                 assertEquals(i + j * 12.3, ptr.get().getD(j), 0.0);
             }
         }
+    }
+    
+    @Test
+    public void testDuplicate() {
+        StructArray<SimpleStruct> structArray = factory.newStructArray(SimpleStruct.class, 8);
+        StructPointer<SimpleStruct> ptr0 = structArray.at(0);
+        StructPointer<SimpleStruct> ptr1 = ptr0.duplicate().at(1);
+        
+        ptr0.get().setI(12);
+        ptr1.get().setI(24);
+        
+        assertEquals(12, structArray.get(0).getI());
+        assertEquals(24, structArray.get(1).getI());
     }
 }
