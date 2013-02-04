@@ -91,7 +91,7 @@ public final class SimpleStructImpl implements SimpleStruct, StructPointer<Simpl
 
     public void setBaseOffset(int baseOffset) {
         this.baseOffset = baseOffset;
-        this.position = baseOffset;
+        at(0);
     }
 
     @Override

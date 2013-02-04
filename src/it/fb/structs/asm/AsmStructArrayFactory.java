@@ -396,8 +396,9 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 mv.visitVarInsn(ILOAD, 1);
                 mv.visitFieldInsn(PUTFIELD, internalName, "baseOffset", "I");
                 mv.visitVarInsn(ALOAD, 0);
-                mv.visitVarInsn(ILOAD, 1);
-                mv.visitFieldInsn(PUTFIELD, internalName, "position", "I");
+                mv.visitInsn(ICONST_0);
+                mv.visitMethodInsn(INVOKEVIRTUAL, internalName, "at", "(I)" + Type.getDescriptor(StructPointer.class));
+                mv.visitInsn(POP);
                 mv.visitInsn(RETURN);
                 mv.visitMaxs(2, 2);
                 mv.visitEnd();

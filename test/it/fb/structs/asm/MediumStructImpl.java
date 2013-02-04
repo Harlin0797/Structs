@@ -86,7 +86,7 @@ public final class MediumStructImpl implements MediumStruct, StructPointer<Mediu
 
     public void setBaseOffset(int baseOffset) {
         this.baseOffset = baseOffset;
-        this.position = baseOffset;
+        at(0);
     }
 
     @Override
