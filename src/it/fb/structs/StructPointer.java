@@ -29,6 +29,18 @@ public interface StructPointer<T> {
     public StructArray<T> getOwner();
 
     /**
+     * Retrieves the number of elements in the array this pointer points to.
+     * @return The number of elements in the array; always positive.
+     */
+    int getLength();
+
+    /**
+     * Retrieves the size in bytes of each element in the array.
+     * @return The size in bytes of each element in the array; always positive.
+     */
+    int getStructSize();
+
+    /**
      * Copies the data pointer by the <i>source</i> pointer into the
      * data pointer by the receiver.
      * @param source Pointer pointing to the data to be copied

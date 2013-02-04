@@ -26,6 +26,28 @@ public class ByteBufferAsmSAFTest {
     }
     
     @Test
+    public void testMediumSizes() {
+        StructArray<MediumStruct> structArray = factory.newStructArray(MediumStruct.class, 32);
+        assertEquals(32, structArray.getLength());
+        assertEquals(84, structArray.getStructSize());
+        assertEquals(32, structArray.at(0).getLength());
+        assertEquals(84, structArray.at(0).getStructSize());
+        assertEquals(1,  structArray.at(0).get().getSimple().getLength());
+        assertEquals(44, structArray.at(0).get().getSimple().getStructSize());
+    }
+
+    @Test
+    public void testComplexSizes() {
+        StructArray<ComplexStruct> structArray = factory.newStructArray(ComplexStruct.class, 32);
+        assertEquals(32, structArray.getLength());
+        assertEquals(804, structArray.getStructSize());
+        assertEquals(32, structArray.at(0).getLength());
+        assertEquals(804, structArray.at(0).getStructSize());
+        assertEquals(8, structArray.at(0).get().getMedium(0).getLength());
+        assertEquals(84, structArray.at(0).get().getMedium(0).getStructSize());
+    }
+
+    @Test
     public void testBasicStruct() {
         StructArray<BasicStruct> structArray = factory.newStructArray(BasicStruct.class, 32);
         assertEquals(32, structArray.getLength());

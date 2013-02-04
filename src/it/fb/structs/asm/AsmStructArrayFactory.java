@@ -107,7 +107,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
             @Override
             public T get(int index) {
                 try {
-                    return structInterface.cast(constructor.newInstance(data, this, 0, index));
+                    return structInterface.cast(constructor.newInstance(data, this, length, 0, index));
                 } catch (Exception ex) {
                     throw new IllegalStateException(ex);
                 }
@@ -116,7 +116,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
             @Override
             public StructPointer<T> at(int index) {
                 try {
-                    return StructPointer.class.cast(constructor.newInstance(data, this, 0, index));
+                    return StructPointer.class.cast(constructor.newInstance(data, this, length, 0, index));
                 } catch (Exception ex) {
                     throw new IllegalStateException(ex);
                 }
@@ -315,8 +315,8 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
         public AsmStructArrayClassFactory<T> build(int structSize) {
             {
                 MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", 
-                        "(" + bcDescriptor + Type.getDescriptor(StructArray.class) + "II)V",
-                        "(" + bcDescriptor + getGenericDescriptor(StructArray.class, structInterface) + "II)V", null);
+                        "(" + bcDescriptor + Type.getDescriptor(StructArray.class) + "III)V",
+                        "(" + bcDescriptor + getGenericDescriptor(StructArray.class, structInterface) + "III)V", null);
                 mv.visitCode();
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V");
@@ -326,12 +326,13 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                     mv.visitInsn(DUP);
                     mv.visitVarInsn(ALOAD, 1);
                     mv.visitInsn(ACONST_NULL);
+                    visitInsnConst(mv, childField.field.getArrayLength() <= 0 ? 1 : childField.field.getArrayLength());
                     visitInsnConst(mv, childField.offset);
                     mv.visitInsn(ICONST_0);
                     mv.visitMethodInsn(INVOKESPECIAL, 
                             Type.getInternalName(childField.childClassFactory.getStructImplementation()), 
                             "<init>",
-                            "(" + bcDescriptor + Type.getDescriptor(StructArray.class) + "II)V");
+                            "(" + bcDescriptor + Type.getDescriptor(StructArray.class) + "III)V");
                     mv.visitFieldInsn(PUTFIELD, internalName, "_" + childField.field.getName(), Type.getDescriptor(childField.childClassFactory.getStructImplementation()));
                 }
                 mv.visitVarInsn(ALOAD, 0);
@@ -342,9 +343,12 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 mv.visitFieldInsn(PUTFIELD, internalName, "owner", Type.getDescriptor(StructArray.class));
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitVarInsn(ILOAD, 3);
-                mv.visitFieldInsn(PUTFIELD, internalName, "baseOffset", "I");
+                mv.visitFieldInsn(PUTFIELD, internalName, "length", "I");
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitVarInsn(ILOAD, 4);
+                mv.visitFieldInsn(PUTFIELD, internalName, "baseOffset", "I");
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitVarInsn(ILOAD, 5);
                 mv.visitMethodInsn(INVOKEVIRTUAL, internalName, "at", "(I)" + Type.getDescriptor(StructPointer.class));
                 mv.visitInsn(POP);
                 mv.visitInsn(RETURN);
@@ -420,6 +424,24 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 mv.visitEnd();
             }
             {
+                MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getLength", "()I", null, null);
+                mv.visitCode();
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitFieldInsn(GETFIELD, internalName, "length", "I");
+                mv.visitInsn(IRETURN);
+                mv.visitMaxs(1, 1);
+                mv.visitEnd();
+            }
+            {
+                MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "getStructSize", "()I", null, null);
+                mv.visitCode();
+                visitInsnConst(mv, structSize);
+                mv.visitInsn(IRETURN);
+                mv.visitMaxs(1, 1);
+                mv.visitEnd();
+            }            
+            {
                 MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_BRIDGE + ACC_SYNTHETIC, "get", "()Ljava/lang/Object;", null, null);
                 mv.visitCode();
                 mv.visitVarInsn(ALOAD, 0);
@@ -432,6 +454,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
             cw.visitField(ACC_PRIVATE + ACC_FINAL + ACC_STATIC, "SIZE", "I", null, Integer.valueOf(structSize)).visitEnd();
             cw.visitField(ACC_PRIVATE + ACC_FINAL, "data", bcDescriptor, null, null).visitEnd();
             cw.visitField(ACC_PRIVATE + ACC_FINAL, "owner", Type.getDescriptor(StructArray.class), getGenericDescriptor(StructArray.class, structInterface), null).visitEnd();
+            cw.visitField(ACC_PRIVATE + ACC_FINAL, "length", "I", null, null).visitEnd();
             cw.visitField(ACC_PRIVATE, "baseOffset", "I", null, null).visitEnd();
             cw.visitField(ACC_PRIVATE, "position", "I", null, null).visitEnd();
             
@@ -450,7 +473,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
             Constructor<?> constructor;
             try {
                 constructor = implementation.getDeclaredConstructor(
-                        dataFactory.getBufferClass(), StructArray.class, Integer.TYPE, Integer.TYPE);
+                        dataFactory.getBufferClass(), StructArray.class, Integer.TYPE, Integer.TYPE, Integer.TYPE);
             } catch (Exception ex) {
                 throw new IllegalStateException(ex);
             }
@@ -473,7 +496,6 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
     private static void visitInsnConst(MethodVisitor mv, int offset) {
         switch (offset) {
             case 0:
-                throw new IllegalArgumentException("Invalid const: " + offset);
             case 1:
             case 2:
             case 3:
@@ -487,7 +509,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 } else if ((short)offset == offset) {
                     mv.visitIntInsn(SIPUSH, offset);
                 } else {
-                    throw new IllegalArgumentException("Invalid const: " + offset);
+                    throw new UnsupportedOperationException("Unsupported const: " + offset);
                 }
                 break;
         }

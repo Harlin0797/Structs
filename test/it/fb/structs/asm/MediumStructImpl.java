@@ -16,6 +16,7 @@ public final class MediumStructImpl implements MediumStruct, StructPointer<Mediu
     private static final int SIZE = 928;
     private final StructData data;
     private final StructArray<SimpleStruct> owner;
+    private final int length;
     private final SimpleStructImpl _Simple;
     private final SimpleStructImpl _Simple2;
     private final SimpleStructImpl _Simple3;
@@ -23,9 +24,10 @@ public final class MediumStructImpl implements MediumStruct, StructPointer<Mediu
     private int baseOffset;
     private int position;
 
-    public MediumStructImpl(StructData data, StructArray<SimpleStruct> owner, int baseOffset, int index) {
+    public MediumStructImpl(StructData data, StructArray<SimpleStruct> owner, int length, int baseOffset, int index) {
         this.data = data;
         this.owner = owner;
+        this.length = length;
         this.baseOffset = baseOffset;
         this._Simple = new SimpleStructImpl(data, null, 36, 0);
         this._Simple2 = new SimpleStructImpl(data, null, 86, 0);
@@ -97,5 +99,14 @@ public final class MediumStructImpl implements MediumStruct, StructPointer<Mediu
     public StructArray<MediumStruct> getOwner() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
+    @Override
+    public int getLength() {
+        return length;
+    }
+
+    @Override
+    public int getStructSize() {
+        return SIZE;
+    }
 }

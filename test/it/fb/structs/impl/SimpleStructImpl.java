@@ -98,5 +98,14 @@ public final class SimpleStructImpl implements SimpleStruct, StructPointer<Simpl
     public StructArray<SimpleStruct> getOwner() {
         return owner;
     }
-    
+
+    @Override
+    public int getLength() {
+        return data.getSize() / SIZE;
+    }
+
+    @Override
+    public int getStructSize() {
+        return SIZE;
+    }
 }
