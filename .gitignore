@@ -169,3 +169,4 @@ pip-log.txt
 build/
 dist/
 nbproject/private/
+/target/
