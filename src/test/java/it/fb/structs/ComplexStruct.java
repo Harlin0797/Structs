@@ -4,6 +4,7 @@ package it.fb.structs;
  *
  * @author Flavio
  */
+@Struct
 public interface ComplexStruct {
     
     @Field(position=0)

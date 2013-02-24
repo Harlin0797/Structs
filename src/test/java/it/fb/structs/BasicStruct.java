@@ -4,6 +4,7 @@ package it.fb.structs;
  *
  * @author Flavio
  */
+@Struct
 public interface BasicStruct {
     @Field
     byte getB();

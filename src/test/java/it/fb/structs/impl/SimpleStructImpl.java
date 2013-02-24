@@ -1,11 +1,9 @@
 package it.fb.structs.impl;
 
-import it.fb.structs.MediumStruct;
 import it.fb.structs.SimpleStruct;
 import it.fb.structs.StructArray;
 import it.fb.structs.StructData;
 import it.fb.structs.StructPointer;
-import it.fb.structs.asm.MediumStructImpl;
 
 /**
  *

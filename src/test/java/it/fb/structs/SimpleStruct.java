@@ -4,6 +4,7 @@ package it.fb.structs;
  *
  * @author Flavio
  */
+@Struct
 public interface SimpleStruct {
     @Field(position=0)
     int getI();

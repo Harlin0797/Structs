@@ -4,6 +4,7 @@ package it.fb.structs;
  *
  * @author Flavio
  */
+@Struct
 public interface ArrayStruct {
     @Field(length=32)
     byte getB(int index);

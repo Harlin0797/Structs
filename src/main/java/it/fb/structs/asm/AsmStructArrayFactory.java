@@ -24,15 +24,18 @@ import org.objectweb.asm.Type;
  * @author Flavio
  */
 public class AsmStructArrayFactory<D extends StructData> extends AbstractStructArrayFactory<D> {
-    
-    public AsmStructArrayFactory(StructData.Factory<D> dataFactory) {
+
+    private final IClassDump dump;
+
+    public AsmStructArrayFactory(StructData.Factory<D> dataFactory,IClassDump dump) {
         super(dataFactory);
+        this.dump = dump;
     }
 
     @Override
     protected <T> AbstractStructArrayClassFactory<T> newStructArrayClassFactory(Class<T> structInterface) {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS + ClassWriter.COMPUTE_FRAMES);
-        String internalName = Type.getInternalName(structInterface) + "$$Impl$$" + System.identityHashCode(this);
+        String internalName = Type.getInternalName(structInterface) + "__Impl__" + System.identityHashCode(this);
         cw.visit(V1_5, 
                 ACC_PUBLIC + ACC_FINAL + ACC_SUPER + ACC_SYNTHETIC,
                 internalName,
@@ -42,7 +45,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
         Builder<T> builder = new Builder<T>(dataFactory, structInterface, cw, internalName);
         SStructDesc desc = Parser.parse(structInterface);
         OffsetVisitor ov = new OffsetVisitor(4);
-        
+
         for (SField field : desc.getFields()) {
             int fieldOffset = field.accept(ov);
             builder.addGetter(field.getGetter(), field, fieldOffset);
@@ -50,7 +53,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 builder.addSetter(field.getSetter(), field, fieldOffset);
             }
         }
-        
+
         return builder.build(ov.getSize());
     }
 
@@ -131,7 +134,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
     
     private class Builder<T> {
 
-        private final StructData.Factory<D> dataFactory;        
+        private final StructData.Factory<D> dataFactory;
         private final Class<T> structInterface;
         private final ClassWriter cw;
         private final String internalName;
@@ -536,11 +539,11 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                         null, null).visitEnd();
             }
             cw.visitEnd();
-            
+            byte[] classData = cw.toByteArray();
+
             ClassLoader ccl = Thread.currentThread().getContextClassLoader();
             Class<? extends T> implementation = (Class<? extends T>) loadInto(ccl, 
-                    Type.getObjectType(internalName).getClassName(),
-                    cw.toByteArray());
+                    Type.getObjectType(internalName).getClassName(), classData);
             Constructor<?> constructor;
             try {
                 constructor = implementation.getDeclaredConstructor(
@@ -548,12 +551,22 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
             } catch (Exception ex) {
                 throw new IllegalStateException(ex);
             }
+
+            if (dump != null) {
+                dump.dump(structInterface, implementation, classData);
+            }
+
             return new AsmStructArrayClassFactory<T>(structInterface, implementation, constructor, structSize);
         }
     }
 
     public static <D extends StructData> IStructArrayFactory<D> newInstance(StructData.Factory<D> factory) {
-        return new AsmStructArrayFactory<D>(factory);
+        return new AsmStructArrayFactory<D>(factory, null);
+    }
+
+    public static <D extends StructData> IStructArrayFactory<D> newInstance(StructData.Factory<D> factory,
+            IClassDump dump) {
+        return new AsmStructArrayFactory<D>(factory, dump);
     }
 
     private static String getGenericDescriptor(Class<?> outerClass, Class<?> innerClass) {
