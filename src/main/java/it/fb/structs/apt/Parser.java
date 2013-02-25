@@ -21,9 +21,13 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.util.SimpleElementVisitor7;
+import javax.lang.model.util.TypeKindVisitor7;
 
 /**
  *
@@ -58,7 +62,7 @@ public class Parser {
         allFields.addAll(fields.values());
         allFields.addAll(arrayFields.values());
         Collections.sort(allFields, ParsedField.PositionComparator);
-        return new PStructDesc(element, allFields);
+        return new PStructDesc(element.getQualifiedName().toString(), allFields);
     }
 
     private void addMethod(ExecutableElement method, TypeElement container) {
@@ -89,20 +93,20 @@ public class Parser {
         mergeOnMap.put(newField.name, newField.mergeWith(curField));
     }
     
-    private void addPropertyGetter(String name, TypeMirror type,Field fieldAnnotation) {
-        mergeField(fields, ParsedField.newWithGetter(name, type, fieldAnnotation));
+    private void addPropertyGetter(String name, TypeMirror type, Field fieldAnnotation) {
+        mergeField(fields, ParsedField.newWithGetter(name, type.accept(ParsedFieldTypeGetter, null), fieldAnnotation));
     }
 
     private void addPropertySetter(String name, TypeMirror type, Field fieldAnnotation) {
-        mergeField(fields, ParsedField.newWithSetter(name, type, fieldAnnotation));
+        mergeField(fields, ParsedField.newWithSetter(name, type.accept(ParsedFieldTypeGetter, null), fieldAnnotation));
     }
 
     private void addPropertyArrayGetter(String name, TypeMirror type, Field fieldAnnotation) {
-        mergeField(arrayFields, ParsedField.newWithGetter(name, type, fieldAnnotation));
+        mergeField(arrayFields, ParsedField.newWithGetter(name, type.accept(ParsedFieldTypeGetter, null), fieldAnnotation));
     }
 
     private void addPropertyArraySetter(String name, TypeMirror type, Field fieldAnnotation) {
-        mergeField(arrayFields, ParsedField.newWithSetter(name, type, fieldAnnotation));
+        mergeField(arrayFields, ParsedField.newWithSetter(name, type.accept(ParsedFieldTypeGetter, null), fieldAnnotation));
     }
     
     private final static List<TypeKind> PRIMITIVE_TYPES = Arrays.asList(
@@ -120,7 +124,7 @@ public class Parser {
         }
         ITypePattern<?> structPattern = TypePatterns.and(
                 TypePatterns.kind(TypeKind.DECLARED),
-                TypePatterns.typeName(StructPointer.class.getPackage().getName(), StructPointer.class.getSimpleName()),
+                TypePatterns.typeName(StructPointer.class),
                 TypePatterns.withTypeArg(kind(TypeKind.DECLARED)));
         
         PATTERNS.add(new Getter(structPattern));
@@ -210,4 +214,57 @@ public class Parser {
             target.addPropertyArraySetter(getPropertyName(element), element.getParameters().get(1).asType(), fieldAnnotation);
         }
     }
+
+    private static final TypeVisitor<ParsedFieldType, Void> ParsedFieldTypeGetter = new TypeKindVisitor7<ParsedFieldType, Void>() {
+
+        @Override
+        public ParsedFieldType visitPrimitiveAsBoolean(PrimitiveType t, Void p) {
+            return ParsedFieldType.PFTBoolean;
+        }
+
+        @Override
+        public ParsedFieldType visitPrimitiveAsByte(PrimitiveType t, Void p) {
+            return ParsedFieldType.PFTByte;
+        }
+
+        @Override
+        public ParsedFieldType visitPrimitiveAsShort(PrimitiveType t, Void p) {
+            return ParsedFieldType.PFTShort;
+        }
+
+        @Override
+        public ParsedFieldType visitPrimitiveAsInt(PrimitiveType t, Void p) {
+            return ParsedFieldType.PFTInt;
+        }
+
+        @Override
+        public ParsedFieldType visitPrimitiveAsLong(PrimitiveType t, Void p) {
+            return ParsedFieldType.PFTLong;
+        }
+
+        @Override
+        public ParsedFieldType visitPrimitiveAsChar(PrimitiveType t, Void p) {
+            return ParsedFieldType.PFTChar;
+        }
+
+        @Override
+        public ParsedFieldType visitPrimitiveAsFloat(PrimitiveType t, Void p) {
+            return ParsedFieldType.PFTFloat;
+        }
+
+        @Override
+        public ParsedFieldType visitPrimitiveAsDouble(PrimitiveType t, Void p) {
+            return ParsedFieldType.PFTDouble;
+        }
+
+        @Override
+        public ParsedFieldType visitDeclared(DeclaredType t, Void p) {
+            if (TypePatterns.typeName(StructPointer.class).matches(t)) {
+                DeclaredType innerType = (DeclaredType) t.getTypeArguments().get(0);
+                return ParsedFieldType.typeOf(((TypeElement)innerType.asElement()).getQualifiedName().toString());
+            } else {
+                return ParsedFieldType.typeOf(((TypeElement)t.asElement()).getQualifiedName().toString());
+            }
+        }
+    };
 }

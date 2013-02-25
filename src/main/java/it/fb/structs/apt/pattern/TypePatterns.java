@@ -26,11 +26,15 @@ public class TypePatterns {
     public static <M extends TypeMirror> ITypePattern<M> kind(TypeKind kind) {
         return new TypeKindPattern<M>(kind);
     }
-    
+
+    public static TypeNamePattern typeName(Class<?> matchClass) {
+        return new TypeNamePattern(matchClass.getPackage().getName(), matchClass.getSimpleName());
+    }
+
     public static TypeNamePattern typeName(String enclosingName, String name) {
         return new TypeNamePattern(enclosingName, name);
     }
-    
+
     public static <M extends TypeMirror> ArgumentsTypePattern withTypeArg(ITypePattern<M> argPattern) {
         return new ArgumentsTypePattern(Arrays.asList(argPattern));
     }

@@ -3,7 +3,6 @@ package it.fb.structs.apt;
 import it.fb.structs.Field;
 import it.fb.structs.apt.pattern.ParseException;
 import java.util.Comparator;
-import javax.lang.model.type.TypeMirror;
 
 /**
  *
@@ -12,13 +11,13 @@ import javax.lang.model.type.TypeMirror;
 public final class ParsedField {
 
     public final String name;
-    public final TypeMirror type;
+    public final ParsedFieldType type;
     public final int arrayLength;
     public final int position;
     public final boolean hasGetter;
     public final boolean hasSetter;
 
-    public ParsedField(String name, TypeMirror type, int arrayLength, int position, boolean hasGetter, boolean hasSetter) {
+    public ParsedField(String name, ParsedFieldType type, int arrayLength, int position, boolean hasGetter, boolean hasSetter) {
         this.name = name;
         this.type = type;
         this.arrayLength = arrayLength;
@@ -56,7 +55,7 @@ public final class ParsedField {
         return new ParsedField(name, type, this.arrayLength == 0 ? other.arrayLength : this.arrayLength, this.position == Integer.MAX_VALUE ? other.position : this.position, this.hasGetter || other.hasGetter, this.hasSetter || other.hasSetter);
     }
 
-    static ParsedField newWithGetter(String name, TypeMirror type, Field annotation) {
+    static ParsedField newWithGetter(String name, ParsedFieldType type, Field annotation) {
         if (annotation == null) {
             return new ParsedField(name, type, 0, Integer.MAX_VALUE, true, false);
         } else {
@@ -64,7 +63,7 @@ public final class ParsedField {
         }
     }
 
-    static ParsedField newWithSetter(String name, TypeMirror type, Field annotation) {
+    static ParsedField newWithSetter(String name, ParsedFieldType type, Field annotation) {
         if (annotation == null) {
             return new ParsedField(name, type, 0, Integer.MAX_VALUE, false, true);
         } else {

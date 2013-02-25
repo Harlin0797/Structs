@@ -4,10 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.SimpleTypeVisitor7;
 
 /**
  *
@@ -15,11 +11,11 @@ import javax.lang.model.util.SimpleTypeVisitor7;
  */
 public class PStructDesc {
 
-    private final TypeElement javaInterface;
+    private final String javaInterface;
     private final List<ParsedField> fields;
 
-    public PStructDesc(TypeElement structClass, List<ParsedField> fields) {
-        this.javaInterface = structClass;
+    public PStructDesc(String javaInterface, List<ParsedField> fields) {
+        this.javaInterface = javaInterface;
         this.fields = new ArrayList<ParsedField>(fields);
     }
 
@@ -27,17 +23,17 @@ public class PStructDesc {
         return fields;
     }
 
-    public TypeElement getJavaInterface() {
+    public String getJavaInterface() {
         return javaInterface;
     }
 
-    public Set<TypeMirror> getInnerTypes() {
-        Set<TypeMirror> ret = new HashSet<TypeMirror>();
+    public Set<String> getInnerTypes() {
+        Set<String> ret = new HashSet<String>();
         for (ParsedField field : fields) {
-            field.type.accept(new SimpleTypeVisitor7<Void, Set<TypeMirror>>() {
+            field.type.accept(new SimpleFieldTypeVisitor<Void, Set<String>>() {
                 @Override
-                public Void visitDeclared(DeclaredType t, Set<TypeMirror> p) {
-                    p.add(t.getTypeArguments().get(0));
+                public Void visitStruct(String name, Set<String> p) {
+                    p.add(name);
                     return null;
                 }
             }, ret);

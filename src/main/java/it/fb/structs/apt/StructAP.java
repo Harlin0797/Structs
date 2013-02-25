@@ -33,11 +33,7 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.PrimitiveType;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.SimpleElementVisitor7;
-import javax.lang.model.util.TypeKindVisitor7;
 import javax.tools.Diagnostic;
 
 /**
@@ -53,7 +49,7 @@ public class StructAP extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        final Map<TypeMirror, PStructDesc> structDescriptors = new HashMap<TypeMirror, PStructDesc>();
+        final Map<String, PStructDesc> structDescriptors = new HashMap<String, PStructDesc>();
         for (Element elem : roundEnv.getElementsAnnotatedWith(Struct.class)) {
             try {
                 process(elem, structDescriptors);
@@ -65,7 +61,7 @@ public class StructAP extends AbstractProcessor {
         List<PStructDesc> sortedStructs = Tarjan.topologicalSort(structDescriptors.values(), new Tarjan.Dependents<PStructDesc>() {
             public Iterable<PStructDesc> getDependents(PStructDesc node) {
                 List<PStructDesc> ret = new ArrayList<PStructDesc>();
-                for (TypeMirror innerType : node.getInnerTypes()) {
+                for (String innerType : node.getInnerTypes()) {
                     PStructDesc innerDesc = structDescriptors.get(innerType);
                     if (innerDesc == null) {
                         throw new ParseException("Unknown type " + innerType + " referred by " + node.getJavaInterface());
@@ -76,14 +72,14 @@ public class StructAP extends AbstractProcessor {
             }
         });
         
-        Map<TypeMirror, Integer> structSizes = new HashMap<TypeMirror, Integer>();
+        Map<String, Integer> structSizes = new HashMap<String, Integer>();
         JCodeModel cm = new JCodeModel();
         for (PStructDesc structDesc : sortedStructs) {
             try {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Generating implementation", structDesc.getJavaInterface());
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Generating implementation: " + structDesc.getJavaInterface());
                 Generator generator = new Generator(structDesc, cm, alignment, structSizes);
                 generator.generate();
-                structSizes.put(structDesc.getJavaInterface().asType(), generator.getStructSize());
+                structSizes.put(structDesc.getJavaInterface(), generator.getStructSize());
             } catch (JClassAlreadyExistsException ex) {
                 throw new IllegalStateException(ex);
             }
@@ -94,19 +90,19 @@ public class StructAP extends AbstractProcessor {
         return (annotations.size() == 1 && annotations.iterator().next().getQualifiedName().contentEquals(Struct.class.getName()));
     }
     
-    private PStructDesc process(Element annotatedElement, Map<TypeMirror, PStructDesc> map) throws IOException {
-        return annotatedElement.accept(new SimpleElementVisitor7<PStructDesc, Map<TypeMirror, PStructDesc>>() {
+    private PStructDesc process(Element annotatedElement, Map<String, PStructDesc> map) throws IOException {
+        return annotatedElement.accept(new SimpleElementVisitor7<PStructDesc, Map<String, PStructDesc>>() {
             @Override
-            protected PStructDesc defaultAction(Element e, Map<TypeMirror, PStructDesc> map) {
+            protected PStructDesc defaultAction(Element e, Map<String, PStructDesc> map) {
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Can not have @Struct annotation", e);
                 return null;
             }
             
             @Override
-            public PStructDesc visitType(TypeElement e, Map<TypeMirror, PStructDesc> map) {
+            public PStructDesc visitType(TypeElement e, Map<String, PStructDesc> map) {
                 try {
                     PStructDesc desc = Parser.parse(e);
-                    map.put(e.asType(), desc);
+                    map.put(e.getQualifiedName().toString(), desc);
                     return desc;
                 } catch (ParseException ex) {
                     processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, ex.getMessage(), e);
@@ -147,12 +143,12 @@ public class StructAP extends AbstractProcessor {
         }
     }
 
-    private static class Generator extends TypeKindVisitor7<Void, ParsedField> {
+    private static class Generator implements PFieldTypeVisitor<Void, ParsedField> {
         
         private final PStructDesc desc;
         private final JCodeModel cm;
         private final int alignment;
-        private final Map<TypeMirror, Integer> structSizes;
+        private final Map<String, Integer> structSizes;
         
         private JClass intfClass;
         private JDefinedClass implClass;
@@ -166,7 +162,7 @@ public class StructAP extends AbstractProcessor {
         private JVar atCurOffset;
         private int fieldOffset;
 
-        public Generator(PStructDesc desc, JCodeModel cm, int alignment, Map<TypeMirror, Integer> structSizes) {
+        public Generator(PStructDesc desc, JCodeModel cm, int alignment, Map<String, Integer> structSizes) {
             this.desc = desc;
             this.cm = cm;
             this.alignment = alignment;
@@ -174,7 +170,7 @@ public class StructAP extends AbstractProcessor {
         }
 
         private void generate() throws JClassAlreadyExistsException {
-            String intfName = desc.getJavaInterface().getQualifiedName().toString();
+            String intfName = desc.getJavaInterface();
             String implName = intfName + "Impl";
             intfClass = cm.ref(intfName);
             implClass = cm._class(JMod.PUBLIC, implName, ClassType.CLASS);
@@ -214,11 +210,9 @@ public class StructAP extends AbstractProcessor {
             }
         }
 
-        @Override
-        public Void visitDeclared(DeclaredType t, ParsedField p) {
-            DeclaredType innerIntf = (DeclaredType) t.getTypeArguments().get(0);
-            JClass innerIntfClass = cm.ref(((TypeElement)innerIntf.asElement()).getQualifiedName().toString());
-            JClass innerImplClass = cm.ref(((TypeElement)innerIntf.asElement()).getQualifiedName() + "Impl");
+        public Void visitStruct(String typeName, ParsedField p) {
+            JClass innerIntfClass = cm.ref(typeName);
+            JClass innerImplClass = cm.ref(typeName + "Impl");
             
             // Field generation
             JFieldVar ptrField = implClass.field(JMod.PRIVATE + JMod.FINAL, innerImplClass, "_" + p.name);
@@ -245,68 +239,62 @@ public class StructAP extends AbstractProcessor {
             isAtBlock.invoke(ptrField, "setBaseOffset")
                     .arg(atCurOffset.plus(JExpr.lit(fieldOffset)));
             
-            if (!structSizes.containsKey(innerIntf)) {
-                throw new IllegalStateException("Unknown interface: " + innerIntf);
+            if (!structSizes.containsKey(typeName)) {
+                throw new IllegalStateException("Unknown interface: " + typeName);
             }
-            fieldOffset += structSizes.get(innerIntf) * (p.isArray() ? p.arrayLength : 1);
+            fieldOffset += structSizes.get(typeName) * (p.isArray() ? p.arrayLength : 1);
             return null;
         }
 
-        @Override
-        public Void visitPrimitiveAsBoolean(PrimitiveType t, ParsedField field) {
-            throw new UnsupportedOperationException("TODO: "  + t);
+        public Void visitBoolean(ParsedField parameter) {
+            throw new UnsupportedOperationException("TODO: boolean");
         }
 
         @Override
-        public Void visitPrimitiveAsByte(PrimitiveType t, ParsedField field) {
-            return generatePrimitiveAccessors(field, cm.BYTE, "getByte", "putByte", 1);
+        public Void visitByte(ParsedField field) {
+            return generatePrimitiveAccessors(field, cm.BYTE, "getByte", "putByte");
         }
 
         @Override
-        public Void visitPrimitiveAsShort(PrimitiveType t, ParsedField field) {
-            return generatePrimitiveAccessors(field, cm.SHORT, "getShort", "putShort", 2);
+        public Void visitShort(ParsedField field) {
+            return generatePrimitiveAccessors(field, cm.SHORT, "getShort", "putShort");
         }
 
         @Override
-        public Void visitPrimitiveAsInt(PrimitiveType t, ParsedField field) {
-            return generatePrimitiveAccessors(field, cm.INT, "getInt", "putInt", 4);
+        public Void visitInt(ParsedField field) {
+            return generatePrimitiveAccessors(field, cm.INT, "getInt", "putInt");
         }
 
         @Override
-        public Void visitPrimitiveAsLong(PrimitiveType t, ParsedField field) {
-            return generatePrimitiveAccessors(field, cm.LONG, "getLong", "putLong", 8);
+        public Void visitLong(ParsedField field) {
+            return generatePrimitiveAccessors(field, cm.LONG, "getLong", "putLong");
         }
 
         @Override
-        public Void visitPrimitiveAsChar(PrimitiveType t, ParsedField field) {
-            return generatePrimitiveAccessors(field, cm.CHAR, "getChar", "putChar", 2);
+        public Void visitChar(ParsedField field) {
+            return generatePrimitiveAccessors(field, cm.CHAR, "getChar", "putChar");
         }
 
         @Override
-        public Void visitPrimitiveAsFloat(PrimitiveType t, ParsedField field) {
-            return generatePrimitiveAccessors(field, cm.FLOAT, "getFloat", "putFloat", 4);
+        public Void visitFloat(ParsedField field) {
+            return generatePrimitiveAccessors(field, cm.FLOAT, "getFloat", "putFloat");
         }
 
         @Override
-        public Void visitPrimitiveAsDouble(PrimitiveType t, ParsedField field) {
-            return generatePrimitiveAccessors(field, cm.DOUBLE, "getDouble", "putDouble", 8);
-        }
-
-        @Override
-        protected Void defaultAction(TypeMirror e, ParsedField field) {
-            throw new IllegalStateException("Unexpected type: " + e);
+        public Void visitDouble(ParsedField field) {
+            return generatePrimitiveAccessors(field, cm.DOUBLE, "getDouble", "putDouble");
         }
 
         private Void generatePrimitiveAccessors(ParsedField field, JPrimitiveType type,
-                String unsafeGetterName, String unsafeSetterName, int typeSize) {
+                String unsafeGetterName, String unsafeSetterName) {
             if (field.isArray()) {
-                generateArrayGetter(field.name, type, unsafeGetterName, typeSize);
-                generateArraySetter(field.name, type, unsafeSetterName, typeSize);
-                fieldOffset += align(typeSize * field.arrayLength);            
+                generateArrayGetter(field.name, type, unsafeGetterName, field.type.getSize());
+                generateArraySetter(field.name, type, unsafeSetterName, field.type.getSize());
+                fieldOffset += align(field.type.getSize() * field.arrayLength);
             } else {
                 generateGetter(field.name, type, unsafeGetterName);
                 generateSetter(field.name, type, unsafeSetterName);
-                fieldOffset += align(typeSize);
+                fieldOffset += align(field.type.getSize());
             }
             return null;
         }

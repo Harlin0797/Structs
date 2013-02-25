@@ -38,7 +38,7 @@ public class ParserTest {
                 Model.methodExecutableElement("setD", VoidType, faLength16, var("index", IntType), var("value", DoubleType))
         );
         PStructDesc result = Parser.parse(element);
-        assertSame(element, result.getJavaInterface());
+        assertEquals("SimpleInterface", result.getJavaInterface());
         assertEquals(2, result.getFields().size());
         assertEquals("I", result.getFields().get(0).name);
         assertEquals(0, result.getFields().get(0).arrayLength);
