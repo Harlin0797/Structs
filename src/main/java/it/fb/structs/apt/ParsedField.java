@@ -3,7 +3,6 @@ package it.fb.structs.apt;
 import it.fb.structs.Field;
 import it.fb.structs.apt.pattern.ParseException;
 import java.util.Comparator;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 
 /**
@@ -16,16 +15,16 @@ public final class ParsedField {
     public final TypeMirror type;
     public final int arrayLength;
     public final int position;
-    public final ExecutableElement getter;
-    public final ExecutableElement setter;
+    public final boolean hasGetter;
+    public final boolean hasSetter;
 
-    public ParsedField(String name, TypeMirror type, int arrayLength, int position, ExecutableElement getter, ExecutableElement setter) {
+    public ParsedField(String name, TypeMirror type, int arrayLength, int position, boolean hasGetter, boolean hasSetter) {
         this.name = name;
         this.type = type;
         this.arrayLength = arrayLength;
         this.position = position;
-        this.getter = getter;
-        this.setter = setter;
+        this.hasGetter = hasGetter;
+        this.hasSetter = hasSetter;
     }
 
     public boolean isArray() {
@@ -39,10 +38,10 @@ public final class ParsedField {
         if (!this.name.equals(other.name)) {
             throw new IllegalArgumentException(String.format("Names differ: '%s' and '%s'", this.name, other.name));
         }
-        if ((other.getter == null) == (this.getter == null)) {
+        if ((other.hasGetter) == (this.hasGetter)) {
             throw new IllegalStateException("Mismatched getters");
         }
-        if ((other.setter == null) == (this.setter == null)) {
+        if ((other.hasSetter) == (this.hasSetter)) {
             throw new IllegalStateException("Mismatched setters");
         }
         if (!type.equals(other.type)) {
@@ -54,22 +53,22 @@ public final class ParsedField {
         if (this.position != Integer.MAX_VALUE && other.arrayLength != Integer.MAX_VALUE && this.arrayLength != other.arrayLength) {
             throw new ParseException("Position length mismatch on getter and setter of field " + name);
         }
-        return new ParsedField(name, type, this.arrayLength == 0 ? other.arrayLength : this.arrayLength, this.position == Integer.MAX_VALUE ? other.position : this.position, this.getter == null ? other.getter : this.getter, this.setter == null ? other.setter : this.setter);
+        return new ParsedField(name, type, this.arrayLength == 0 ? other.arrayLength : this.arrayLength, this.position == Integer.MAX_VALUE ? other.position : this.position, this.hasGetter || other.hasGetter, this.hasSetter || other.hasSetter);
     }
 
-    static ParsedField newWithGetter(String name, TypeMirror type, Field annotation, ExecutableElement getter) {
+    static ParsedField newWithGetter(String name, TypeMirror type, Field annotation) {
         if (annotation == null) {
-            return new ParsedField(name, type, 0, Integer.MAX_VALUE, getter, null);
+            return new ParsedField(name, type, 0, Integer.MAX_VALUE, true, false);
         } else {
-            return new ParsedField(name, type, annotation.length(), annotation.position(), getter, null);
+            return new ParsedField(name, type, annotation.length(), annotation.position(), true, false);
         }
     }
 
-    static ParsedField newWithSetter(String name, TypeMirror type, Field annotation, ExecutableElement setter) {
+    static ParsedField newWithSetter(String name, TypeMirror type, Field annotation) {
         if (annotation == null) {
-            return new ParsedField(name, type, 0, Integer.MAX_VALUE, null, setter);
+            return new ParsedField(name, type, 0, Integer.MAX_VALUE, false, true);
         } else {
-            return new ParsedField(name, type, annotation.length(), annotation.position(), null, setter);
+            return new ParsedField(name, type, annotation.length(), annotation.position(), false, true);
         }
     }
 

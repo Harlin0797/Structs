@@ -89,20 +89,20 @@ public class Parser {
         mergeOnMap.put(newField.name, newField.mergeWith(curField));
     }
     
-    private void addPropertyGetter(String name, TypeMirror type, ExecutableElement method, Field fieldAnnotation) {
-        mergeField(fields, ParsedField.newWithGetter(name, type, fieldAnnotation, method));
+    private void addPropertyGetter(String name, TypeMirror type,Field fieldAnnotation) {
+        mergeField(fields, ParsedField.newWithGetter(name, type, fieldAnnotation));
     }
 
-    private void addPropertySetter(String name, TypeMirror type, ExecutableElement method, Field fieldAnnotation) {
-        mergeField(fields, ParsedField.newWithSetter(name, type, fieldAnnotation, method));
+    private void addPropertySetter(String name, TypeMirror type, Field fieldAnnotation) {
+        mergeField(fields, ParsedField.newWithSetter(name, type, fieldAnnotation));
     }
 
-    private void addPropertyArrayGetter(String name, TypeMirror type, ExecutableElement method, Field fieldAnnotation) {
-        mergeField(arrayFields, ParsedField.newWithGetter(name, type, fieldAnnotation, method));
+    private void addPropertyArrayGetter(String name, TypeMirror type, Field fieldAnnotation) {
+        mergeField(arrayFields, ParsedField.newWithGetter(name, type, fieldAnnotation));
     }
 
-    private void addPropertyArraySetter(String name, TypeMirror type, ExecutableElement method, Field fieldAnnotation) {
-        mergeField(arrayFields, ParsedField.newWithSetter(name, type, fieldAnnotation, method));
+    private void addPropertyArraySetter(String name, TypeMirror type, Field fieldAnnotation) {
+        mergeField(arrayFields, ParsedField.newWithSetter(name, type, fieldAnnotation));
     }
     
     private final static List<TypeKind> PRIMITIVE_TYPES = Arrays.asList(
@@ -165,7 +165,7 @@ public class Parser {
 
         public void callAddProperty(Parser target, ExecutableElement element,
                 Field fieldAnnotation) {
-            target.addPropertyGetter(getPropertyName(element), element.getReturnType(), element, fieldAnnotation);
+            target.addPropertyGetter(getPropertyName(element), element.getReturnType(), fieldAnnotation);
         }
     }
 
@@ -179,7 +179,7 @@ public class Parser {
 
         public void callAddProperty(Parser target, ExecutableElement element,
                 Field fieldAnnotation) {
-            target.addPropertySetter(getPropertyName(element), element.getParameters().get(0).asType(), element, fieldAnnotation);
+            target.addPropertySetter(getPropertyName(element), element.getParameters().get(0).asType(), fieldAnnotation);
         }
     }
 
@@ -193,7 +193,7 @@ public class Parser {
 
         public void callAddProperty(Parser target, ExecutableElement element,
                 Field fieldAnnotation) {
-            target.addPropertyArrayGetter(getPropertyName(element), element.getReturnType(), element, fieldAnnotation);
+            target.addPropertyArrayGetter(getPropertyName(element), element.getReturnType(), fieldAnnotation);
         }
     }
 
@@ -207,7 +207,7 @@ public class Parser {
 
         public void callAddProperty(Parser target, ExecutableElement element,
                 Field fieldAnnotation) {
-            target.addPropertyArraySetter(getPropertyName(element), element.getParameters().get(1).asType(), element, fieldAnnotation);
+            target.addPropertyArraySetter(getPropertyName(element), element.getParameters().get(1).asType(), fieldAnnotation);
         }
     }
 }
