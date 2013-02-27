@@ -29,7 +29,63 @@ public final class ParsedField {
     public boolean isArray() {
         return arrayLength > 0;
     }
-    
+
+    public String getName() {
+        return name;
+    }
+
+    public ParsedFieldType getType() {
+        return type;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public int getArrayLength() {
+        return arrayLength;
+    }
+
+    public <R, P> R accept(final ParsedFieldVisitor<R, P> visitor, P parameter) {
+        return type.accept(new PFieldTypeVisitor<R, P>() {
+            public R visitBoolean(P parameter) {
+                return visitor.visitBoolean(ParsedField.this, parameter);
+            }
+
+            public R visitByte(P parameter) {
+                return visitor.visitByte(ParsedField.this, parameter);
+            }
+
+            public R visitChar(P parameter) {
+                return visitor.visitChar(ParsedField.this, parameter);
+            }
+
+            public R visitShort(P parameter) {
+                return visitor.visitShort(ParsedField.this, parameter);
+            }
+
+            public R visitInt(P parameter) {
+                return visitor.visitInt(ParsedField.this, parameter);
+            }
+
+            public R visitLong(P parameter) {
+                return visitor.visitLong(ParsedField.this, parameter);
+            }
+
+            public R visitFloat(P parameter) {
+                return visitor.visitFloat(ParsedField.this, parameter);
+            }
+
+            public R visitDouble(P parameter) {
+                return visitor.visitDouble(ParsedField.this, parameter);
+            }
+
+            public R visitStruct(String typeName, P parameter) {
+                return visitor.visitStruct(ParsedField.this, parameter);
+            }
+        }, parameter);
+    }
+
     ParsedField mergeWith(ParsedField other) {
         if (other == null) {
             return this;
