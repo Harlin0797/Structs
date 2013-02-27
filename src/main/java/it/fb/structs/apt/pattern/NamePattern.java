@@ -22,4 +22,12 @@ public class NamePattern<E extends Element> implements IElementPattern<E> {
     public Matcher matcher(E element) {
         return namePattern.matcher(element.getSimpleName());
     }
+
+    public String getMatcherGroup(E element, int group) {
+        Matcher matcher = namePattern.matcher(element.getSimpleName());
+        if (!matcher.matches()) {
+            throw new IllegalStateException("The getMatcherGroup must be called only if the pattern matches");
+        }
+        return matcher.group(group);
+    }
 }

@@ -4,7 +4,6 @@ import it.fb.structs.Field;
 import it.fb.structs.StructPointer;
 import it.fb.structs.apt.pattern.AndPattern;
 import static it.fb.structs.apt.pattern.ElementPatterns.*;
-import it.fb.structs.apt.pattern.IElementPattern;
 import it.fb.structs.apt.pattern.ITypePattern;
 import it.fb.structs.apt.pattern.NamePattern;
 import it.fb.structs.apt.pattern.ParseException;
@@ -12,11 +11,7 @@ import it.fb.structs.apt.pattern.TypePatterns;
 import static it.fb.structs.apt.pattern.TypePatterns.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -33,86 +28,38 @@ import javax.lang.model.util.TypeKindVisitor7;
  *
  * @author Flavio
  */
-public class Parser {
-    
+public class Parser extends AbstractParser<ExecutableElement> {
+
     public static PStructDesc parse(TypeElement element) {
         final Parser parser = new Parser(element);
-        return parser.buildDesc();
+        parser.doParse(element);
+        return parser.build();
     }
-    
-    private final Map<String, ParsedField> fields = new HashMap<String, ParsedField>();
-    private final Map<String, ParsedField> arrayFields = new HashMap<String, ParsedField>();
-    private final TypeElement element;
 
     private Parser(TypeElement element) {
-        this.element = element;
+        super(element.getQualifiedName().toString(), PATTERNS);
     }
 
-    private PStructDesc buildDesc() {
+    private void doParse(TypeElement element) {
         for (Element enclosed : element.getEnclosedElements()) {
             enclosed.accept(new SimpleElementVisitor7<Void, TypeElement>() {
                 @Override
                 public Void visitExecutable(ExecutableElement method, TypeElement container) {
-                    addMethod(method, container);
+                    if (method.getModifiers().contains(Modifier.ABSTRACT)) {
+                        addMethod(method);
+                    } else if (null != method.getAnnotation(Field.class)) {
+                        throw new ParseException("@Field cannot annotate implemented methods: " + method);
+                    }
                     return null;
                 }
             }, element);
         }
-        List<ParsedField> allFields = new ArrayList<ParsedField>();
-        allFields.addAll(fields.values());
-        allFields.addAll(arrayFields.values());
-        Collections.sort(allFields, ParsedField.PositionComparator);
-        return new PStructDesc(element.getQualifiedName().toString(), allFields);
     }
 
-    private void addMethod(ExecutableElement method, TypeElement container) {
-        Field fieldAnnotation = method.getAnnotation(Field.class);
-        if (!method.getModifiers().contains(Modifier.ABSTRACT)) {
-            if (fieldAnnotation != null) {
-                throw new ParseException("@Field cannot annotate implemented methods: " + method);
-            }
-            return;
-        }
-
-        for (NamedPattern pattern : PATTERNS) {
-            if (pattern.matches(method)) {
-                try {
-                    pattern.callAddProperty(this, method, fieldAnnotation);
-                } catch (RuntimeException ex) {
-                    throw new IllegalStateException("Error with pattern " + pattern + " on method " + method, ex);
-                }
-                return;
-            }
-        }
-        
-        throw new ParseException("Unrecognized method signature: " + method);
-    }
-
-    private void mergeField(Map<String, ParsedField> mergeOnMap, ParsedField newField) {
-        ParsedField curField = mergeOnMap.get(newField.name);
-        mergeOnMap.put(newField.name, newField.mergeWith(curField));
-    }
-    
-    private void addPropertyGetter(String name, TypeMirror type, Field fieldAnnotation) {
-        mergeField(fields, ParsedField.newWithGetter(name, type.accept(ParsedFieldTypeGetter, null), fieldAnnotation));
-    }
-
-    private void addPropertySetter(String name, TypeMirror type, Field fieldAnnotation) {
-        mergeField(fields, ParsedField.newWithSetter(name, type.accept(ParsedFieldTypeGetter, null), fieldAnnotation));
-    }
-
-    private void addPropertyArrayGetter(String name, TypeMirror type, Field fieldAnnotation) {
-        mergeField(arrayFields, ParsedField.newWithGetter(name, type.accept(ParsedFieldTypeGetter, null), fieldAnnotation));
-    }
-
-    private void addPropertyArraySetter(String name, TypeMirror type, Field fieldAnnotation) {
-        mergeField(arrayFields, ParsedField.newWithSetter(name, type.accept(ParsedFieldTypeGetter, null), fieldAnnotation));
-    }
-    
     private final static List<TypeKind> PRIMITIVE_TYPES = Arrays.asList(
-            TypeKind.BYTE, TypeKind.SHORT, TypeKind.INT, TypeKind.LONG,
+            TypeKind.BOOLEAN, TypeKind.BYTE, TypeKind.SHORT, TypeKind.INT, TypeKind.LONG,
             TypeKind.FLOAT, TypeKind.DOUBLE, TypeKind.CHAR);
-    private final static List<NamedPattern> PATTERNS = new ArrayList<NamedPattern>();
+    private final static List<MethodPattern<ExecutableElement>> PATTERNS = new ArrayList<MethodPattern<ExecutableElement>>();
     
     static {
         for (TypeKind primitiveKind : PRIMITIVE_TYPES) {
@@ -131,87 +78,86 @@ public class Parser {
         PATTERNS.add(new ArrayGetter(structPattern));
     }
 
-    private static abstract class NamedPattern implements IElementPattern<ExecutableElement> {
-        
-        protected final AndPattern<ExecutableElement> basePattern;
+    private static final class Getter implements MethodPattern<ExecutableElement> {
 
-        public NamedPattern(AndPattern<ExecutableElement> basePattern) {
-            this.basePattern = basePattern;
-        }
+        private final AndPattern<ExecutableElement> elementPattern;
         
-        public boolean matches(ExecutableElement element) {
-            return basePattern.matches(element);
-        }
-        
-        public String getPropertyName(ExecutableElement element) {
-            Matcher matcher = basePattern.getPattern(NamePattern.class).matcher(element);
-            if (!matcher.matches()) {
-                throw new IllegalStateException("Matcher now fails but previously succeded");
-            }
-            return matcher.group(1);
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName();
-        }
-
-        public abstract void callAddProperty(Parser target, ExecutableElement element, Field fieldAnnotation);
-    }
-    
-    private static final class Getter extends NamedPattern {
         public Getter(ITypePattern<?> typePattern) {
-            super(and(
-                nameIs("get(.*)"), 
-                returns(typePattern),
-                hasNoArgs()));
+            elementPattern = and(nameIs("get(.*)"),
+                    returns(typePattern),
+                    hasNoArgs());
         }
 
-        public void callAddProperty(Parser target, ExecutableElement element,
-                Field fieldAnnotation) {
-            target.addPropertyGetter(getPropertyName(element), element.getReturnType(), fieldAnnotation);
+        public ParsedField match(ExecutableElement method) {
+            if (!elementPattern.matches(method)) {
+                return null;
+            }
+            String name = elementPattern.getPattern(NamePattern.class).getMatcherGroup(method, 1);
+            ParsedFieldType type = method.getReturnType().accept(ParsedFieldTypeGetter, null);
+            return ParsedField.newWithGetter(name, type, method.getAnnotation(Field.class));
         }
     }
 
-    private static final class Setter extends NamedPattern {
+    private static final class Setter implements MethodPattern<ExecutableElement> {
+
+        private final AndPattern<ExecutableElement> elementPattern;
+
         public Setter(ITypePattern<?> typePattern) {
-            super(and(
-                nameIs("set(.*)"), 
-                returns(kind(TypeKind.VOID)),
-                hasArg(typePattern)));
+            elementPattern = and(
+                    nameIs("set(.*)"), 
+                    returns(kind(TypeKind.VOID)),
+                    hasArg(typePattern));
         }
 
-        public void callAddProperty(Parser target, ExecutableElement element,
-                Field fieldAnnotation) {
-            target.addPropertySetter(getPropertyName(element), element.getParameters().get(0).asType(), fieldAnnotation);
+        public ParsedField match(ExecutableElement method) {
+            if (!elementPattern.matches(method)) {
+                return null;
+            }
+            String name = elementPattern.getPattern(NamePattern.class).getMatcherGroup(method, 1);
+            ParsedFieldType type = method.getParameters().get(0).asType().accept(ParsedFieldTypeGetter, null);
+            return ParsedField.newWithSetter(name, type, method.getAnnotation(Field.class));
         }
     }
 
-    private static final class ArrayGetter extends NamedPattern {
+    private static final class ArrayGetter implements MethodPattern<ExecutableElement> {
+
+        private final AndPattern<ExecutableElement> elementPattern;
+        
         public ArrayGetter(ITypePattern<?> typePattern) {
-            super(and(
-                nameIs("get(.*)"), 
-                returns(typePattern),
-                hasArg(kind(TypeKind.INT))));
+            elementPattern = and(
+                    nameIs("get(.*)"), 
+                    returns(typePattern),
+                    hasArg(kind(TypeKind.INT)));
         }
 
-        public void callAddProperty(Parser target, ExecutableElement element,
-                Field fieldAnnotation) {
-            target.addPropertyArrayGetter(getPropertyName(element), element.getReturnType(), fieldAnnotation);
+        public ParsedField match(ExecutableElement method) {
+            if (!elementPattern.matches(method)) {
+                return null;
+            }
+            String name = elementPattern.getPattern(NamePattern.class).getMatcherGroup(method, 1);
+            ParsedFieldType type = method.getReturnType().accept(ParsedFieldTypeGetter, null);
+            return ParsedField.newWithGetter(name, type, method.getAnnotation(Field.class));
         }
     }
 
-    private static final class ArraySetter extends NamedPattern {
+    private static final class ArraySetter implements MethodPattern<ExecutableElement> {
+
+        private final AndPattern<ExecutableElement> elementPattern;
+
         public ArraySetter(ITypePattern<?> typePattern) {
-            super(and(
-                nameIs("set(.*)"), 
-                returns(kind(TypeKind.VOID)),
-                hasArgs(kind(TypeKind.INT), typePattern)));
+            elementPattern = and(
+                    nameIs("set(.*)"), 
+                    returns(kind(TypeKind.VOID)),
+                    hasArgs(kind(TypeKind.INT), typePattern));
         }
 
-        public void callAddProperty(Parser target, ExecutableElement element,
-                Field fieldAnnotation) {
-            target.addPropertyArraySetter(getPropertyName(element), element.getParameters().get(1).asType(), fieldAnnotation);
+        public ParsedField match(ExecutableElement method) {
+            if (!elementPattern.matches(method)) {
+                return null;
+            }
+            String name = elementPattern.getPattern(NamePattern.class).getMatcherGroup(method, 1);
+            ParsedFieldType type = method.getParameters().get(1).asType().accept(ParsedFieldTypeGetter, null);
+            return ParsedField.newWithSetter(name, type, method.getAnnotation(Field.class));
         }
     }
 

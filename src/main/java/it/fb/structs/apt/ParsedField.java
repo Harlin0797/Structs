@@ -46,6 +46,10 @@ public final class ParsedField {
         return arrayLength;
     }
 
+    boolean isComplete() {
+        return (hasGetter && hasSetter) || (hasGetter && !type.isPrimitive());
+    }
+
     public <R, P> R accept(final ParsedFieldVisitor<R, P> visitor, P parameter) {
         return type.accept(new PFieldTypeVisitor<R, P>() {
             public R visitBoolean(P parameter) {
@@ -105,8 +109,8 @@ public final class ParsedField {
         if (this.arrayLength != 0 && other.arrayLength != 0 && this.arrayLength != other.arrayLength) {
             throw new ParseException("Array length mismatch on getter and setter of field " + name);
         }
-        if (this.position != Integer.MAX_VALUE && other.arrayLength != Integer.MAX_VALUE && this.arrayLength != other.arrayLength) {
-            throw new ParseException("Position length mismatch on getter and setter of field " + name);
+        if (this.position != Integer.MAX_VALUE && other.position != Integer.MAX_VALUE && this.position != other.position) {
+            throw new ParseException("Position mismatch on getter and setter of field " + name);
         }
         return new ParsedField(name, type, this.arrayLength == 0 ? other.arrayLength : this.arrayLength, this.position == Integer.MAX_VALUE ? other.position : this.position, this.hasGetter || other.hasGetter, this.hasSetter || other.hasSetter);
     }

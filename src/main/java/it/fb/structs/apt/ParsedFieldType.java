@@ -5,13 +5,19 @@ package it.fb.structs.apt;
  * @author Flavio
  */
 public abstract class ParsedFieldType {
-    
+
     public abstract String getTypeName();
-    
+
     public abstract <R, P> R accept(PFieldTypeVisitor<R, P> visitor, P parameter);
-    
+
     public abstract int getSize();
-    
+
+    public abstract boolean isPrimitive();
+
+    public static ParsedFieldType typeOf(Class<?> typeClass) {
+        return typeOf(typeClass.getName());
+    }
+
     public static ParsedFieldType typeOf(String typeName) {
         if (Byte.TYPE.getName().equals(typeName)) {
             return PFTByte;
@@ -31,19 +37,22 @@ public abstract class ParsedFieldType {
             return new PTypeStruct(typeName);
         }
     }
-    
+
     private static abstract class PBaseType extends ParsedFieldType {
         protected final String typeName;
         protected final int size;
+        protected final boolean primitive;
 
-        public PBaseType(String typeName, int size) {
+        public PBaseType(String typeName, int size, boolean primitive) {
             this.typeName = typeName;
             this.size = size;
+            this.primitive = primitive;
         }
         
         protected PBaseType(Class<?> javaType, int size) {
             this.typeName = javaType.getName();
             this.size = size;
+            this.primitive = javaType.isPrimitive();
         }
 
         @Override
@@ -57,6 +66,11 @@ public abstract class ParsedFieldType {
                 throw new IllegalStateException("No default size for this type");
             }
             return size;
+        }
+
+        @Override
+        public boolean isPrimitive() {
+            return primitive;
         }
 
         @Override
@@ -124,7 +138,7 @@ public abstract class ParsedFieldType {
     private static class PTypeStruct extends PBaseType {
 
         public PTypeStruct(String typeName) {
-            super(typeName, -1);
+            super(typeName, -1, false);
         }
 
         @Override
