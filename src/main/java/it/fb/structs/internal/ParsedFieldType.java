@@ -12,20 +12,20 @@ public abstract class ParsedFieldType {
     
     public abstract String getClassName();
     
-    public abstract <T> T accept(SFieldTypeVisitor<T> visitor);
+    public abstract <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter);
     
     public abstract int getSize();
     
-    public static interface SFieldTypeVisitor<T> {
-        T visitBoolean();
-        T visitByte();
-        T visitChar();
-        T visitShort();
-        T visitInt();
-        T visitLong();
-        T visitFloat();
-        T visitDouble();
-        T visitStruct();
+    public static interface SFieldTypeVisitor<R, P> {
+        R visitBoolean(P parameter);
+        R visitByte(P parameter);
+        R visitChar(P parameter);
+        R visitShort(P parameter);
+        R visitInt(P parameter);
+        R visitLong(P parameter);
+        R visitFloat(P parameter);
+        R visitDouble(P parameter);
+        R visitStruct(P parameter);
     }
     
     public static ParsedFieldType typeOf(Type javaType) {
@@ -84,50 +84,50 @@ public abstract class ParsedFieldType {
     
     public static final ParsedFieldType STypeByte = new SBaseType(Byte.TYPE, 1) {
         @Override
-        public <T> T accept(SFieldTypeVisitor<T> visitor) {
-            return visitor.visitByte();
+        public <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter) {
+            return visitor.visitByte(parameter);
         }
     };
     
     public static final ParsedFieldType STypeShort = new SBaseType(Short.TYPE, 2) {
         @Override
-        public <T> T accept(SFieldTypeVisitor<T> visitor) {
-            return visitor.visitShort();
+        public <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter) {
+            return visitor.visitShort(parameter);
         }
     };
     
     public static final ParsedFieldType STypeChar = new SBaseType(Character.TYPE, 2) {
         @Override
-        public <T> T accept(SFieldTypeVisitor<T> visitor) {
-            return visitor.visitChar();
+        public <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter) {
+            return visitor.visitChar(parameter);
         }
     };
     
     public static final ParsedFieldType STypeInt = new SBaseType(Integer.TYPE, 4) {
         @Override
-        public <T> T accept(SFieldTypeVisitor<T> visitor) {
-            return visitor.visitInt();
+        public <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter) {
+            return visitor.visitInt(parameter);
         }
     };
     
     public static final ParsedFieldType STypeLong = new SBaseType(Long.TYPE, 8) {
         @Override
-        public <T> T accept(SFieldTypeVisitor<T> visitor) {
-            return visitor.visitLong();
+        public <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter) {
+            return visitor.visitLong(parameter);
         }
     };
     
     public static final ParsedFieldType STypeFloat = new SBaseType(Float.TYPE, 4) {
         @Override
-        public <T> T accept(SFieldTypeVisitor<T> visitor) {
-            return visitor.visitFloat();
+        public <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter) {
+            return visitor.visitFloat(parameter);
         }
     };
     
     public static final ParsedFieldType STypeDouble = new SBaseType(Double.TYPE, 8) {
         @Override
-        public <T> T accept(SFieldTypeVisitor<T> visitor) {
-            return visitor.visitDouble();
+        public <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter) {
+            return visitor.visitDouble(parameter);
         }
     };
     
@@ -142,8 +142,8 @@ public abstract class ParsedFieldType {
         }
 
         @Override
-        public <T> T accept(SFieldTypeVisitor<T> visitor) {
-            return visitor.visitStruct();
+        public <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter) {
+            return visitor.visitStruct(parameter);
         }
     }
 

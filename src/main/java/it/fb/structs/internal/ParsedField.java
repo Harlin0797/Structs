@@ -52,52 +52,52 @@ public class ParsedField {
         return position;
     }
 
-    public <T> T accept(final ParsedFieldVisitor<T> visitor) {
-        return type.accept(new ParsedFieldType.SFieldTypeVisitor<T>() {
+    public <R> R accept(final ParsedFieldVisitor<R> visitor) {
+        return type.accept(new ParsedFieldType.SFieldTypeVisitor<R, Void>() {
             @Override
-            public T visitBoolean() {
+            public R visitBoolean(Void p) {
                 return visitor.visitBoolean(ParsedField.this);
             }
             @Override
-            public T visitByte() {
+            public R visitByte(Void p) {
                 return visitor.visitByte(ParsedField.this);
             }
 
             @Override
-            public T visitChar() {
+            public R visitChar(Void p) {
                 return visitor.visitChar(ParsedField.this);
             }
 
             @Override
-            public T visitShort() {
+            public R visitShort(Void p) {
                 return visitor.visitShort(ParsedField.this);
             }
 
             @Override
-            public T visitInt() {
+            public R visitInt(Void p) {
                 return visitor.visitInt(ParsedField.this);
             }
 
             @Override
-            public T visitLong() {
+            public R visitLong(Void p) {
                 return visitor.visitLong(ParsedField.this);
             }
 
             @Override
-            public T visitFloat() {
+            public R visitFloat(Void p) {
                 return visitor.visitFloat(ParsedField.this);
             }
 
             @Override
-            public T visitDouble() {
+            public R visitDouble(Void p) {
                 return visitor.visitDouble(ParsedField.this);
             }
 
             @Override
-            public T visitStruct() {
+            public R visitStruct(Void p) {
                 return visitor.visitStruct(ParsedField.this);
             }
-        });
+        }, null);
     }
 
     @Override
