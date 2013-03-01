@@ -2,15 +2,14 @@ package it.fb.structs.bytebuffer;
 
 import it.fb.structs.internal.SField;
 import it.fb.structs.internal.SField.SFieldVisitor;
-import it.fb.structs.internal.SStructDesc;
 
 /**
  *
  * @author Flavio
  */
-public class OffsetVisitor implements SFieldVisitor<Integer> {
+public abstract class OffsetVisitor implements SFieldVisitor<Integer> {
 
-    private final int alignment;
+    protected final int alignment;
     private int size = 0;
 
     public OffsetVisitor(int alignment) {
@@ -62,12 +61,8 @@ public class OffsetVisitor implements SFieldVisitor<Integer> {
     }
 
     @Override
-    public Integer visitStruct(SField field, SStructDesc structDesc) {
-        OffsetVisitor ov = new OffsetVisitor(alignment);
-        for (SField innerField : structDesc.getFields()) {
-            innerField.accept(ov);
-        }
-        return addSize(ov.getSize(), field.getArrayLength());
+    public Integer visitStruct(SField field, String className) {
+        return addSize(getStructSize(className), field.getArrayLength());
     }
 
     public int getSize() {
@@ -78,4 +73,5 @@ public class OffsetVisitor implements SFieldVisitor<Integer> {
         return alignment;
     }
     
+    protected abstract int getStructSize(String className);
 }

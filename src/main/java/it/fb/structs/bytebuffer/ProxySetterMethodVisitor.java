@@ -2,7 +2,6 @@ package it.fb.structs.bytebuffer;
 
 import it.fb.structs.internal.SField;
 import it.fb.structs.internal.SField.SFieldVisitor;
-import it.fb.structs.internal.SStructDesc;
 import java.nio.ByteBuffer;
 
 /**
@@ -96,7 +95,7 @@ class ProxySetterMethodVisitor implements SFieldVisitor<IProxyMethodImplementor>
     }
 
     @Override
-    public BaseProxyMethodImplementor visitStruct(SField field, SStructDesc structDesc) {
+    public BaseProxyMethodImplementor visitStruct(SField field, String className) {
         throw new UnsupportedOperationException("Struct setter must not be specified");
     }
     

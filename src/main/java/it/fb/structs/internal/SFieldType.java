@@ -10,7 +10,7 @@ import java.lang.reflect.Type;
  */
 public abstract class SFieldType {
     
-    public abstract Class<?> getJavaType();
+    public abstract String getClassName();
     
     public abstract <T> T accept(SFieldTypeVisitor<T> visitor);
     
@@ -22,7 +22,7 @@ public abstract class SFieldType {
         T visitShort();
         T visitInt();
         T visitLong();
-        T visitStruct(SStructDesc structDesc);
+        T visitStruct(String className);
         T visitFloat();
         T visitDouble();
     }
@@ -44,24 +44,27 @@ public abstract class SFieldType {
             return STypeDouble;
         } else if (javaType instanceof ParameterizedType 
                 && (StructPointer.class.equals(((ParameterizedType)javaType).getRawType()))) {
-            return new STypeStruct(Parser.parse(((ParameterizedType)javaType).getActualTypeArguments()[0]));
+            return new STypeStruct((Class<?>)(((ParameterizedType)javaType).getActualTypeArguments()[0]));
         } else {
-            throw new UnsupportedOperationException("Unsupported type: " + javaType);
+            return new STypeStruct(((Class<?>)javaType).getName());
         }
     }
     
     static abstract class SBaseType extends SFieldType {
-        protected final Class<?> javaType;
+        protected final String className;
         protected final int size;
 
         public SBaseType(Class<?> javaType, int size) {
-            this.javaType = javaType;
+            this(javaType.getName(), size);
+        }
+
+        public SBaseType(String className, int size) {
+            this.className = className;
             this.size = size;
         }
 
-        @Override
-        public Class<?> getJavaType() {
-            return javaType;
+        public String getClassName() {
+            return className;
         }
 
         @Override
@@ -74,7 +77,7 @@ public abstract class SFieldType {
 
         @Override
         public String toString() {
-            return javaType.getSimpleName();
+            return className;
         }
     }
     
@@ -128,18 +131,19 @@ public abstract class SFieldType {
     };
     
     public static class STypeStruct extends SBaseType {
-        
-        private final SStructDesc desc;
-        
-        public STypeStruct(SStructDesc desc) {
-            super(desc.getJavaInterface(), -1);
-            this.desc = desc;
+
+        public STypeStruct(Class<?> structClass) {
+            super(structClass, -1);
         }
-        
+
+        public STypeStruct(String className) {
+            super(className, -1);
+        }
+
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
-            return visitor.visitStruct(desc);
+            return visitor.visitStruct(className);
         }
     }
-   
+
 }

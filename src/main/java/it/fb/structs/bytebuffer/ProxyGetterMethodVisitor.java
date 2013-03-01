@@ -3,7 +3,6 @@ package it.fb.structs.bytebuffer;
 import it.fb.structs.bytebuffer.ByteBufferProxyHandlerFactory.SABBDataInvocationHandler;
 import it.fb.structs.internal.SField;
 import it.fb.structs.internal.SField.SFieldVisitor;
-import it.fb.structs.internal.SStructDesc;
 import java.lang.reflect.Proxy;
 import java.nio.ByteBuffer;
 
@@ -94,9 +93,13 @@ class ProxyGetterMethodVisitor implements SFieldVisitor<IProxyMethodImplementor>
     }
 
     @Override
-    public IProxyMethodImplementor visitStruct(SField field, SStructDesc structDesc) {
-        final ByteBufferProxyHandlerFactory<?> innerStructHandlerFactory = 
-                ByteBufferProxyHandlerFactory.newHandlerFactory(structDesc.getJavaInterface());
+    public IProxyMethodImplementor visitStruct(SField field, String className) {
+        final ByteBufferProxyHandlerFactory<?> innerStructHandlerFactory;
+        try {
+            innerStructHandlerFactory = ByteBufferProxyHandlerFactory.newHandlerFactory(Class.forName(className));
+        } catch (ClassNotFoundException ex) {
+            throw new IllegalStateException(ex);
+        }
         return new BaseProxyMethodImplementor() {
             
             private Object proxy;

@@ -63,7 +63,7 @@ class ByteBufferProxyHandlerFactory<T> {
     
     public static <T> ByteBufferProxyHandlerFactory<T> newHandlerFactory(Class<T> structInterface) {
         SStructDesc desc = Parser.parse(structInterface);
-        OffsetVisitor ov = new OffsetVisitor(4);
+        OffsetVisitor ov = new RecursiveOffsetVisitor(4);
         Map<Method, IProxyMethodImplementor> implementors = new HashMap<Method, IProxyMethodImplementor>();
         for (SField field : desc.getFields()) {
             int fieldOffset = field.accept(ov);
@@ -75,7 +75,6 @@ class ByteBufferProxyHandlerFactory<T> {
         return new ByteBufferProxyHandlerFactory<T>(structInterface, ov.getSize(), implementors);
     }
     
-
     static class SABBDataInvocationHandler implements InvocationHandler {
         protected final Map<Method, IProxyMethodImplementor> implementors;
         protected final ByteBuffer data;
@@ -144,4 +143,27 @@ class ByteBufferProxyHandlerFactory<T> {
         }
 
     }    
+
+    private static class RecursiveOffsetVisitor extends OffsetVisitor {
+
+        public RecursiveOffsetVisitor(int alignment) {
+            super(alignment);
+        }
+
+        @Override
+        protected int getStructSize(String className) {
+            SStructDesc desc;
+            try {
+                desc = Parser.parse(Class.forName(className));
+            } catch (ClassNotFoundException ex) {
+                throw new IllegalArgumentException(ex);
+            }
+            RecursiveOffsetVisitor ov = new RecursiveOffsetVisitor(alignment);
+            for (SField field : desc.getFields()) {
+                field.accept(ov);
+            }
+            return ov.getSize();
+        }
+
+    }
 }

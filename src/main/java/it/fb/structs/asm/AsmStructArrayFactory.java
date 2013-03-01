@@ -6,7 +6,6 @@ import it.fb.structs.StructData;
 import it.fb.structs.StructPointer;
 import it.fb.structs.bytebuffer.OffsetVisitor;
 import it.fb.structs.impl.AbstractStructArrayFactory;
-import it.fb.structs.internal.Parser;
 import it.fb.structs.internal.SField;
 import it.fb.structs.internal.SField.SFieldVisitor;
 import it.fb.structs.internal.SStructDesc;
@@ -27,13 +26,13 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
 
     private final IClassDump dump;
 
-    public AsmStructArrayFactory(StructData.Factory<D> dataFactory,IClassDump dump) {
+    public AsmStructArrayFactory(StructData.Factory<D> dataFactory, IClassDump dump) {
         super(dataFactory);
         this.dump = dump;
     }
 
     @Override
-    protected <T> AbstractStructArrayClassFactory<T> newStructArrayClassFactory(Class<T> structInterface) {
+    protected <T> AbstractStructArrayClassFactory<T> newStructArrayClassFactory(Class<T> structInterface, SStructDesc desc) {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS + ClassWriter.COMPUTE_FRAMES);
         String internalName = Type.getInternalName(structInterface) + "__Impl__" + System.identityHashCode(this);
         cw.visit(V1_5, 
@@ -43,8 +42,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 Type.getInternalName(Object.class),
                 new String[] { Type.getInternalName(structInterface), Type.getInternalName(StructPointer.class) });
         Builder<T> builder = new Builder<T>(dataFactory, structInterface, cw, internalName);
-        SStructDesc desc = Parser.parse(structInterface);
-        OffsetVisitor ov = new OffsetVisitor(4);
+        OffsetVisitor ov = new LocalOffsetVisitor(4);
 
         for (SField field : desc.getFields()) {
             int fieldOffset = field.accept(ov);
@@ -222,8 +220,13 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 }
 
                 @Override
-                public Void visitStruct(SField field, SStructDesc structDesc) {
-                    AbstractStructArrayClassFactory<?> childFactory = AsmStructArrayFactory.this.getClassFactory(structDesc.getJavaInterface());
+                public Void visitStruct(SField field, String className) {
+                    AbstractStructArrayClassFactory<?> childFactory;
+                    try {
+                        childFactory = AsmStructArrayFactory.this.getClassFactory(Class.forName(className));
+                    } catch (ClassNotFoundException ex) {
+                        throw new IllegalStateException(ex);
+                    }
                     childFields.add(new ChildFieldData(field, offset, childFactory));
                     mv.visitVarInsn(ALOAD, 0);
                     mv.visitFieldInsn(GETFIELD, internalName, "_" + field.getName(), Type.getDescriptor(childFactory.getStructImplementation()));
@@ -305,11 +308,11 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 }
 
                 @Override
-                public Void visitStruct(SField field, SStructDesc structDesc) {
+                public Void visitStruct(SField field, String className) {
                     throw new UnsupportedOperationException("Struct setters are not supported (" + field.getName() + ")");
                 }
             });
-            
+
             mv.visitInsn(RETURN);
             mv.visitMaxs(4, 3);
             mv.visitEnd();

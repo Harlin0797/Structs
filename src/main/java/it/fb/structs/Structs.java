@@ -190,7 +190,7 @@ public class Structs {
             }
 
             @Override
-            public Object visitStruct(SField field, SStructDesc structDesc) {
+            public Object visitStruct(SField field, String className) {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
         };
