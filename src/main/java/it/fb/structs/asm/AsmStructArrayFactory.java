@@ -45,7 +45,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
         OffsetVisitor ov = new LocalOffsetVisitor(4);
 
         for (ParsedField field : desc.getFields()) {
-            int fieldOffset = field.accept(ov);
+            int fieldOffset = field.accept(ov, null);
             builder.addGetter(field.getGetter(), field, fieldOffset);
             if (field.getSetter() != null) {
                 builder.addSetter(field.getSetter(), field, fieldOffset);
@@ -158,43 +158,43 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
             final MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, getter.getName(), Type.getMethodDescriptor(getter), null, null);
             mv.visitCode();
 
-            field.accept(new ParsedFieldVisitor<Void>() {
+            field.accept(new ParsedFieldVisitor<Void, Void>() {
                 @Override
-                public Void visitBoolean(ParsedField field) {
+                public Void visitBoolean(ParsedField field, Void p) {
                     throw new UnsupportedOperationException("TODO");
                 }
                 @Override
-                public Void visitByte(ParsedField field) {
+                public Void visitByte(ParsedField field, Void p) {
                     return primitiveGetter(field, IRETURN, "getByte", "B");
                 }
 
                 @Override
-                public Void visitChar(ParsedField field) {
+                public Void visitChar(ParsedField field, Void p) {
                     return primitiveGetter(field, IRETURN, "getChar", "C");
                 }
 
                 @Override
-                public Void visitShort(ParsedField field) {
+                public Void visitShort(ParsedField field, Void p) {
                     return primitiveGetter(field, IRETURN, "getShort", "S");
                 }
 
                 @Override
-                public Void visitInt(ParsedField field) {
+                public Void visitInt(ParsedField field, Void p) {
                     return primitiveGetter(field, IRETURN, "getInt", "I");
                 }
 
                 @Override
-                public Void visitLong(ParsedField field) {
+                public Void visitLong(ParsedField field, Void p) {
                     return primitiveGetter(field, LRETURN, "getLong", "J");
                 }
 
                 @Override
-                public Void visitFloat(ParsedField field) {
+                public Void visitFloat(ParsedField field, Void p) {
                     return primitiveGetter(field, FRETURN, "getFloat", "F");
                 }
 
                 @Override
-                public Void visitDouble(ParsedField field) {
+                public Void visitDouble(ParsedField field, Void p) {
                     return primitiveGetter(field, DRETURN, "getDouble", "D");
                 }
 
@@ -224,7 +224,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 }
 
                 @Override
-                public Void visitStruct(ParsedField field) {
+                public Void visitStruct(ParsedField field, Void p) {
                     AbstractStructArrayClassFactory<?> childFactory;
                     try {
                         childFactory = AsmStructArrayFactory.this.getClassFactory(
@@ -244,7 +244,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                     mv.visitMaxs(2, 2);
                     return null;
                 }
-            });
+            }, null);
             
             mv.visitEnd();
         }
@@ -270,43 +270,43 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 mv.visitInsn(IADD);
             }
 
-            field.accept(new ParsedFieldVisitor<Void>() {
+            field.accept(new ParsedFieldVisitor<Void, Void>() {
                 @Override
-                public Void visitBoolean(ParsedField field) {
+                public Void visitBoolean(ParsedField field, Void p) {
                     throw new UnsupportedOperationException("TODO");
                 }
                 @Override
-                public Void visitByte(ParsedField field) {
+                public Void visitByte(ParsedField field, Void p) {
                     return primitiveSetter(field, ILOAD, "putByte", "B");
                 }
 
                 @Override
-                public Void visitChar(ParsedField field) {
+                public Void visitChar(ParsedField field, Void p) {
                     return primitiveSetter(field, ILOAD, "putChar", "C");
                 }
 
                 @Override
-                public Void visitShort(ParsedField field) {
+                public Void visitShort(ParsedField field, Void p) {
                     return primitiveSetter(field, ILOAD, "putShort", "S");
                 }
 
                 @Override
-                public Void visitInt(ParsedField field) {
+                public Void visitInt(ParsedField field, Void p) {
                     return primitiveSetter(field, ILOAD, "putInt", "I");
                 }
 
                 @Override
-                public Void visitLong(ParsedField field) {
+                public Void visitLong(ParsedField field, Void p) {
                     return primitiveSetter(field, LLOAD, "putLong", "J");
                 }
 
                 @Override
-                public Void visitFloat(ParsedField field) {
+                public Void visitFloat(ParsedField field, Void p) {
                     return primitiveSetter(field, FLOAD, "putFloat", "F");
                 }
 
                 @Override
-                public Void visitDouble(ParsedField field) {
+                public Void visitDouble(ParsedField field, Void p) {
                     return primitiveSetter(field, DLOAD, "putDouble", "D");
                 }
 
@@ -317,10 +317,10 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 }
 
                 @Override
-                public Void visitStruct(ParsedField field) {
+                public Void visitStruct(ParsedField field, Void p) {
                     throw new UnsupportedOperationException("Struct setters are not supported (" + field.getName() + ")");
                 }
-            });
+            }, null);
 
             mv.visitInsn(RETURN);
             mv.visitMaxs(4, 3);

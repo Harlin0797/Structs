@@ -7,7 +7,7 @@ import it.fb.structs.internal.ParsedField.ParsedFieldVisitor;
  *
  * @author Flavio
  */
-public abstract class OffsetVisitor implements ParsedFieldVisitor<Integer> {
+public abstract class OffsetVisitor implements ParsedFieldVisitor<Integer, Void> {
 
     protected final int alignment;
     private int size = 0;
@@ -25,47 +25,47 @@ public abstract class OffsetVisitor implements ParsedFieldVisitor<Integer> {
         return ret;
     }
 
-    public Integer visitBoolean(ParsedField field) {
+    public Integer visitBoolean(ParsedField field, Void p) {
         throw new UnsupportedOperationException("TODO");
     }
 
     @Override
-    public Integer visitByte(ParsedField field) {
+    public Integer visitByte(ParsedField field, Void p) {
         return addSize(1, field.getArrayLength());
     }
 
     @Override
-    public Integer visitChar(ParsedField field) {
+    public Integer visitChar(ParsedField field, Void p) {
         return addSize(2, field.getArrayLength());
     }
 
     @Override
-    public Integer visitShort(ParsedField field) {
+    public Integer visitShort(ParsedField field, Void p) {
         return addSize(2, field.getArrayLength());
     }
 
     @Override
-    public Integer visitInt(ParsedField field) {
+    public Integer visitInt(ParsedField field, Void p) {
         return addSize(4, field.getArrayLength());
     }
 
     @Override
-    public Integer visitLong(ParsedField field) {
+    public Integer visitLong(ParsedField field, Void p) {
         return addSize(8, field.getArrayLength());
     }
 
     @Override
-    public Integer visitFloat(ParsedField field) {
+    public Integer visitFloat(ParsedField field, Void p) {
         return addSize(4, field.getArrayLength());
     }
 
     @Override
-    public Integer visitDouble(ParsedField field) {
+    public Integer visitDouble(ParsedField field, Void p) {
         return addSize(8, field.getArrayLength());
     }
 
     @Override
-    public Integer visitStruct(ParsedField field) {
+    public Integer visitStruct(ParsedField field, Void p) {
         return addSize(getStructSize(field.getType().getClassName()), field.getArrayLength());
     }
 

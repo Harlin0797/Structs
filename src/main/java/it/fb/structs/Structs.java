@@ -137,11 +137,11 @@ public class Structs {
                     getters.put(field.getGetter(), field);
                     setters.put(field.getSetter(), field);
                     if (field.getArrayLength() <= 1) {
-                        values.put(field.getName(), field.accept(FieldValueVisitor));
+                        values.put(field.getName(), field.accept(FieldValueVisitor, null));
                     } else {
                         List<Object> list = new ArrayList<Object>(field.getArrayLength());
                         for (int j = 0; j < field.getArrayLength(); j++) {
-                            list.add(field.accept(FieldValueVisitor));
+                            list.add(field.accept(FieldValueVisitor, null));
                         }
                         values.put(field.getName(), list);
                     }
@@ -152,49 +152,49 @@ public class Structs {
             return new StructArrayHashImpl<T>(structInterface, getters, setters, data);
         }
         
-        private static ParsedFieldVisitor<Object> FieldValueVisitor = new ParsedFieldVisitor<Object>() {
+        private static ParsedFieldVisitor<Object, Void> FieldValueVisitor = new ParsedFieldVisitor<Object, Void>() {
 
-            public Object visitBoolean(ParsedField field) {
+            public Object visitBoolean(ParsedField field, Void p) {
                 throw new UnsupportedOperationException("TODO");
             }
 
             @Override
-            public Object visitByte(ParsedField field) {
+            public Object visitByte(ParsedField field, Void p) {
                 return Byte.valueOf((byte)0);
             }
 
             @Override
-            public Object visitChar(ParsedField field) {
+            public Object visitChar(ParsedField field, Void p) {
                 return Character.valueOf('\0');
             }
 
             @Override
-            public Object visitShort(ParsedField field) {
+            public Object visitShort(ParsedField field, Void p) {
                 return Short.valueOf((short) 0);
             }
 
             @Override
-            public Object visitInt(ParsedField field) {
+            public Object visitInt(ParsedField field, Void p) {
                 return Integer.valueOf(0);
             }
 
             @Override
-            public Object visitLong(ParsedField field) {
+            public Object visitLong(ParsedField field, Void p) {
                 return Long.valueOf(0L);
             }
 
             @Override
-            public Object visitFloat(ParsedField field) {
+            public Object visitFloat(ParsedField field, Void p) {
                 return Float.valueOf(0.0f);
             }
 
             @Override
-            public Object visitDouble(ParsedField field) {
+            public Object visitDouble(ParsedField field, Void p) {
                 return Double.valueOf(0.0);
             }
 
             @Override
-            public Object visitStruct(ParsedField field) {
+            public Object visitStruct(ParsedField field, Void p) {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
         };

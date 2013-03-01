@@ -52,52 +52,52 @@ public class ParsedField {
         return position;
     }
 
-    public <R> R accept(final ParsedFieldVisitor<R> visitor) {
-        return type.accept(new ParsedFieldType.SFieldTypeVisitor<R, Void>() {
+    public <R, P> R accept(final ParsedFieldVisitor<R, P> visitor, P parameter) {
+        return type.accept(new ParsedFieldType.SFieldTypeVisitor<R, P>() {
             @Override
-            public R visitBoolean(Void p) {
-                return visitor.visitBoolean(ParsedField.this);
+            public R visitBoolean(P p) {
+                return visitor.visitBoolean(ParsedField.this, p);
             }
             @Override
-            public R visitByte(Void p) {
-                return visitor.visitByte(ParsedField.this);
-            }
-
-            @Override
-            public R visitChar(Void p) {
-                return visitor.visitChar(ParsedField.this);
+            public R visitByte(P p) {
+                return visitor.visitByte(ParsedField.this, p);
             }
 
             @Override
-            public R visitShort(Void p) {
-                return visitor.visitShort(ParsedField.this);
+            public R visitChar(P p) {
+                return visitor.visitChar(ParsedField.this, p);
             }
 
             @Override
-            public R visitInt(Void p) {
-                return visitor.visitInt(ParsedField.this);
+            public R visitShort(P p) {
+                return visitor.visitShort(ParsedField.this, p);
             }
 
             @Override
-            public R visitLong(Void p) {
-                return visitor.visitLong(ParsedField.this);
+            public R visitInt(P p) {
+                return visitor.visitInt(ParsedField.this, p);
             }
 
             @Override
-            public R visitFloat(Void p) {
-                return visitor.visitFloat(ParsedField.this);
+            public R visitLong(P p) {
+                return visitor.visitLong(ParsedField.this, p);
             }
 
             @Override
-            public R visitDouble(Void p) {
-                return visitor.visitDouble(ParsedField.this);
+            public R visitFloat(P p) {
+                return visitor.visitFloat(ParsedField.this, p);
             }
 
             @Override
-            public R visitStruct(Void p) {
-                return visitor.visitStruct(ParsedField.this);
+            public R visitDouble(P p) {
+                return visitor.visitDouble(ParsedField.this, p);
             }
-        }, null);
+
+            @Override
+            public R visitStruct(P p) {
+                return visitor.visitStruct(ParsedField.this, p);
+            }
+        }, parameter);
     }
 
     @Override
@@ -105,15 +105,15 @@ public class ParsedField {
         return type + " " + name;
     }
 
-    public interface ParsedFieldVisitor<T> {
-        T visitBoolean(ParsedField field);
-        T visitByte(ParsedField field);
-        T visitChar(ParsedField field);
-        T visitShort(ParsedField field);
-        T visitInt(ParsedField field);
-        T visitLong(ParsedField field);
-        T visitFloat(ParsedField field);
-        T visitDouble(ParsedField field);
-        T visitStruct(ParsedField field);
+    public interface ParsedFieldVisitor<R, P> {
+        R visitBoolean(ParsedField field, P parameter);
+        R visitByte(ParsedField field, P parameter);
+        R visitChar(ParsedField field, P parameter);
+        R visitShort(ParsedField field, P parameter);
+        R visitInt(ParsedField field, P parameter);
+        R visitLong(ParsedField field, P parameter);
+        R visitFloat(ParsedField field, P parameter);
+        R visitDouble(ParsedField field, P parameter);
+        R visitStruct(ParsedField field, P parameter);
     }
 }

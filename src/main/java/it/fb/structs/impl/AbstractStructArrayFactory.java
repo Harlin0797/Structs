@@ -73,7 +73,7 @@ public abstract class AbstractStructArrayFactory<D extends StructData> implement
             try {
                 LocalOffsetVisitor ov = new LocalOffsetVisitor(alignment);
                 for (ParsedField field : getStructDescriptor(Class.forName(className)).getFields()) {
-                    field.accept(ov);
+                    field.accept(ov, null);
                 }
                 return ov.getSize();
             } catch (ClassNotFoundException ex) {

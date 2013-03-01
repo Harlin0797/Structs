@@ -10,24 +10,20 @@ import java.nio.ByteBuffer;
  *
  * @author Flavio
  */
-class ProxyGetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImplementor> {
+class ProxyGetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImplementor, Integer> {
     
-    private final int offset;
-
-    public ProxyGetterMethodVisitor(int offset) {
-        this.offset = offset;
-    }
+    public static final ProxyGetterMethodVisitor INSTANCE = new ProxyGetterMethodVisitor();
     
     private static int getIndex(Object[] args) {
         return (args == null ? 0 : (Integer) args[0]);
     }
 
-    public IProxyMethodImplementor visitBoolean(ParsedField field) {
+    public IProxyMethodImplementor visitBoolean(ParsedField field, final Integer offset) {
         throw new UnsupportedOperationException("TODO");
     }
 
     @Override
-    public IProxyMethodImplementor visitByte(ParsedField field) {
+    public IProxyMethodImplementor visitByte(ParsedField field, final Integer offset) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -37,7 +33,7 @@ class ProxyGetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
     }
 
     @Override
-    public IProxyMethodImplementor visitChar(ParsedField field) {
+    public IProxyMethodImplementor visitChar(ParsedField field, final Integer offset) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -47,7 +43,7 @@ class ProxyGetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
     }
 
     @Override
-    public IProxyMethodImplementor visitShort(ParsedField field) {
+    public IProxyMethodImplementor visitShort(ParsedField field, final Integer offset) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -57,7 +53,7 @@ class ProxyGetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
     }
 
     @Override
-    public IProxyMethodImplementor visitInt(ParsedField field) {
+    public IProxyMethodImplementor visitInt(ParsedField field, final Integer offset) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -67,7 +63,7 @@ class ProxyGetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
     }
 
     @Override
-    public IProxyMethodImplementor visitLong(ParsedField field) {
+    public IProxyMethodImplementor visitLong(ParsedField field, final Integer offset) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -77,7 +73,7 @@ class ProxyGetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
     }
 
     @Override
-    public IProxyMethodImplementor visitFloat(ParsedField field) {
+    public IProxyMethodImplementor visitFloat(ParsedField field, final Integer offset) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -87,7 +83,7 @@ class ProxyGetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
     }
 
     @Override
-    public IProxyMethodImplementor visitDouble(ParsedField field) {
+    public IProxyMethodImplementor visitDouble(ParsedField field, final Integer offset) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -97,7 +93,7 @@ class ProxyGetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
     }
 
     @Override
-    public IProxyMethodImplementor visitStruct(ParsedField field) {
+    public IProxyMethodImplementor visitStruct(ParsedField field, Integer offset) {
         final ByteBufferProxyHandlerFactory<?> innerStructHandlerFactory;
         try {
             innerStructHandlerFactory = ByteBufferProxyHandlerFactory.newHandlerFactory(

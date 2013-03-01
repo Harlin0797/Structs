@@ -8,13 +8,9 @@ import java.nio.ByteBuffer;
  *
  * @author Flavio
  */
-class ProxySetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImplementor> {
+class ProxySetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImplementor, Integer> {
     
-    private final int offset;
-
-    public ProxySetterMethodVisitor(int offset) {
-        this.offset = offset;
-    }
+    public static final ProxySetterMethodVisitor INSTANCE = new ProxySetterMethodVisitor();
     
     private static int getIndex(Object[] args) {
         return (args.length == 1 ? 0 : (Integer) args[0]);
@@ -24,12 +20,12 @@ class ProxySetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
         return (args.length == 1 ? args[0] : args[1]);
     }
 
-    public IProxyMethodImplementor visitBoolean(ParsedField field) {
+    public IProxyMethodImplementor visitBoolean(ParsedField field, final Integer offset) {
         throw new UnsupportedOperationException("TODO");
     }
 
     @Override
-    public BaseProxyMethodImplementor visitByte(ParsedField field) {
+    public BaseProxyMethodImplementor visitByte(ParsedField field, final Integer offset) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -39,7 +35,7 @@ class ProxySetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
     }
 
     @Override
-    public BaseProxyMethodImplementor visitChar(ParsedField field) {
+    public BaseProxyMethodImplementor visitChar(ParsedField field, final Integer offset) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -49,7 +45,7 @@ class ProxySetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
     }
 
     @Override
-    public BaseProxyMethodImplementor visitShort(ParsedField field) {
+    public BaseProxyMethodImplementor visitShort(ParsedField field, final Integer offset) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -59,7 +55,7 @@ class ProxySetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
     }
 
     @Override
-    public BaseProxyMethodImplementor visitInt(ParsedField field) {
+    public BaseProxyMethodImplementor visitInt(ParsedField field, final Integer offset) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -69,7 +65,7 @@ class ProxySetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
     }
 
     @Override
-    public BaseProxyMethodImplementor visitLong(ParsedField field) {
+    public BaseProxyMethodImplementor visitLong(ParsedField field, final Integer offset) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -79,7 +75,7 @@ class ProxySetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
     }
 
     @Override
-    public BaseProxyMethodImplementor visitFloat(ParsedField field) {
+    public BaseProxyMethodImplementor visitFloat(ParsedField field, final Integer offset) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -89,7 +85,7 @@ class ProxySetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
     }
 
     @Override
-    public BaseProxyMethodImplementor visitDouble(ParsedField field) {
+    public BaseProxyMethodImplementor visitDouble(ParsedField field, final Integer offset) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -99,7 +95,7 @@ class ProxySetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
     }
 
     @Override
-    public BaseProxyMethodImplementor visitStruct(ParsedField field) {
+    public BaseProxyMethodImplementor visitStruct(ParsedField field, final Integer offset) {
         throw new UnsupportedOperationException("Struct setter must not be specified");
     }
     

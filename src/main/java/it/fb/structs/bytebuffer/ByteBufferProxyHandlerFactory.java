@@ -66,10 +66,10 @@ class ByteBufferProxyHandlerFactory<T> {
         OffsetVisitor ov = new RecursiveOffsetVisitor(4);
         Map<Method, IProxyMethodImplementor> implementors = new HashMap<Method, IProxyMethodImplementor>();
         for (ParsedField field : desc.getFields()) {
-            int fieldOffset = field.accept(ov);
-            implementors.put(field.getGetter(), field.accept(new ProxyGetterMethodVisitor(fieldOffset)));
+            int fieldOffset = field.accept(ov, null);
+            implementors.put(field.getGetter(), field.accept(ProxyGetterMethodVisitor.INSTANCE, fieldOffset));
             if (field.getSetter() != null) {
-                implementors.put(field.getSetter(), field.accept(new ProxySetterMethodVisitor(fieldOffset)));
+                implementors.put(field.getSetter(), field.accept(ProxySetterMethodVisitor.INSTANCE, fieldOffset));
             }
         }
         return new ByteBufferProxyHandlerFactory<T>(structInterface, ov.getSize(), implementors);
@@ -160,7 +160,7 @@ class ByteBufferProxyHandlerFactory<T> {
             }
             RecursiveOffsetVisitor ov = new RecursiveOffsetVisitor(alignment);
             for (ParsedField field : desc.getFields()) {
-                field.accept(ov);
+                field.accept(ov, null);
             }
             return ov.getSize();
         }
