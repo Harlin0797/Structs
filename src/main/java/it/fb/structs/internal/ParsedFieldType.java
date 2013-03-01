@@ -17,6 +17,7 @@ public abstract class ParsedFieldType {
     public abstract int getSize();
     
     public static interface SFieldTypeVisitor<T> {
+        T visitBoolean();
         T visitByte();
         T visitChar();
         T visitShort();

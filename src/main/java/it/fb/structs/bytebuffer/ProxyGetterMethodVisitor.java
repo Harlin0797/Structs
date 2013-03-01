@@ -22,6 +22,10 @@ class ProxyGetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
         return (args == null ? 0 : (Integer) args[0]);
     }
 
+    public IProxyMethodImplementor visitBoolean(ParsedField field) {
+        throw new UnsupportedOperationException("TODO");
+    }
+
     @Override
     public IProxyMethodImplementor visitByte(ParsedField field) {
         return new BaseProxyMethodImplementor() {

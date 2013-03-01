@@ -25,6 +25,10 @@ public abstract class OffsetVisitor implements ParsedFieldVisitor<Integer> {
         return ret;
     }
 
+    public Integer visitBoolean(ParsedField field) {
+        throw new UnsupportedOperationException("TODO");
+    }
+
     @Override
     public Integer visitByte(ParsedField field) {
         return addSize(1, field.getArrayLength());

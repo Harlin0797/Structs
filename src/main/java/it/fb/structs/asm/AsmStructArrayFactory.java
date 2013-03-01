@@ -6,9 +6,9 @@ import it.fb.structs.StructData;
 import it.fb.structs.StructPointer;
 import it.fb.structs.bytebuffer.OffsetVisitor;
 import it.fb.structs.impl.AbstractStructArrayFactory;
+import it.fb.structs.internal.PStructDesc;
 import it.fb.structs.internal.ParsedField;
 import it.fb.structs.internal.ParsedField.ParsedFieldVisitor;
-import it.fb.structs.internal.PStructDesc;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -160,6 +160,10 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
 
             field.accept(new ParsedFieldVisitor<Void>() {
                 @Override
+                public Void visitBoolean(ParsedField field) {
+                    throw new UnsupportedOperationException("TODO");
+                }
+                @Override
                 public Void visitByte(ParsedField field) {
                     return primitiveGetter(field, IRETURN, "getByte", "B");
                 }
@@ -266,6 +270,10 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
             }
 
             field.accept(new ParsedFieldVisitor<Void>() {
+                @Override
+                public Void visitBoolean(ParsedField field) {
+                    throw new UnsupportedOperationException("TODO");
+                }
                 @Override
                 public Void visitByte(ParsedField field) {
                     return primitiveSetter(field, ILOAD, "putByte", "B");

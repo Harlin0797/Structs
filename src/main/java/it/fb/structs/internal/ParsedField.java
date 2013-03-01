@@ -55,6 +55,10 @@ public class ParsedField {
     public <T> T accept(final ParsedFieldVisitor<T> visitor) {
         return type.accept(new ParsedFieldType.SFieldTypeVisitor<T>() {
             @Override
+            public T visitBoolean() {
+                return visitor.visitBoolean(ParsedField.this);
+            }
+            @Override
             public T visitByte() {
                 return visitor.visitByte(ParsedField.this);
             }
@@ -102,6 +106,7 @@ public class ParsedField {
     }
 
     public interface ParsedFieldVisitor<T> {
+        T visitBoolean(ParsedField field);
         T visitByte(ParsedField field);
         T visitChar(ParsedField field);
         T visitShort(ParsedField field);

@@ -153,7 +153,11 @@ public class Structs {
         }
         
         private static ParsedFieldVisitor<Object> FieldValueVisitor = new ParsedFieldVisitor<Object>() {
-            
+
+            public Object visitBoolean(ParsedField field) {
+                throw new UnsupportedOperationException("TODO");
+            }
+
             @Override
             public Object visitByte(ParsedField field) {
                 return Byte.valueOf((byte)0);
