@@ -97,10 +97,11 @@ class ProxyGetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
     }
 
     @Override
-    public IProxyMethodImplementor visitStruct(ParsedField field, String className) {
+    public IProxyMethodImplementor visitStruct(ParsedField field) {
         final ByteBufferProxyHandlerFactory<?> innerStructHandlerFactory;
         try {
-            innerStructHandlerFactory = ByteBufferProxyHandlerFactory.newHandlerFactory(Class.forName(className));
+            innerStructHandlerFactory = ByteBufferProxyHandlerFactory.newHandlerFactory(
+                    Class.forName(field.getType().getClassName()));
         } catch (ClassNotFoundException ex) {
             throw new IllegalStateException(ex);
         }

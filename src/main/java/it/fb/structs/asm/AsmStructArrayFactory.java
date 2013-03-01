@@ -224,10 +224,11 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 }
 
                 @Override
-                public Void visitStruct(ParsedField field, String className) {
+                public Void visitStruct(ParsedField field) {
                     AbstractStructArrayClassFactory<?> childFactory;
                     try {
-                        childFactory = AsmStructArrayFactory.this.getClassFactory(Class.forName(className));
+                        childFactory = AsmStructArrayFactory.this.getClassFactory(
+                                Class.forName(field.getType().getClassName()));
                     } catch (ClassNotFoundException ex) {
                         throw new IllegalStateException(ex);
                     }
@@ -316,7 +317,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 }
 
                 @Override
-                public Void visitStruct(ParsedField field, String className) {
+                public Void visitStruct(ParsedField field) {
                     throw new UnsupportedOperationException("Struct setters are not supported (" + field.getName() + ")");
                 }
             });

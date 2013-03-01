@@ -94,8 +94,8 @@ public class ParsedField {
             }
 
             @Override
-            public T visitStruct(String className) {
-                return visitor.visitStruct(ParsedField.this, className);
+            public T visitStruct() {
+                return visitor.visitStruct(ParsedField.this);
             }
         });
     }
@@ -114,6 +114,6 @@ public class ParsedField {
         T visitLong(ParsedField field);
         T visitFloat(ParsedField field);
         T visitDouble(ParsedField field);
-        T visitStruct(ParsedField field, String className);
+        T visitStruct(ParsedField field);
     }
 }

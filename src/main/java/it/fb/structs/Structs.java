@@ -194,7 +194,7 @@ public class Structs {
             }
 
             @Override
-            public Object visitStruct(ParsedField field, String className) {
+            public Object visitStruct(ParsedField field) {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
         };

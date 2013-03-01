@@ -23,9 +23,9 @@ public abstract class ParsedFieldType {
         T visitShort();
         T visitInt();
         T visitLong();
-        T visitStruct(String className);
         T visitFloat();
         T visitDouble();
+        T visitStruct();
     }
     
     public static ParsedFieldType typeOf(Type javaType) {
@@ -143,7 +143,7 @@ public abstract class ParsedFieldType {
 
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
-            return visitor.visitStruct(className);
+            return visitor.visitStruct();
         }
     }
 

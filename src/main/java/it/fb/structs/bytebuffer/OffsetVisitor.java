@@ -65,8 +65,8 @@ public abstract class OffsetVisitor implements ParsedFieldVisitor<Integer> {
     }
 
     @Override
-    public Integer visitStruct(ParsedField field, String className) {
-        return addSize(getStructSize(className), field.getArrayLength());
+    public Integer visitStruct(ParsedField field) {
+        return addSize(getStructSize(field.getType().getClassName()), field.getArrayLength());
     }
 
     public int getSize() {

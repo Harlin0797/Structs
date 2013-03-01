@@ -99,7 +99,7 @@ class ProxySetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
     }
 
     @Override
-    public BaseProxyMethodImplementor visitStruct(ParsedField field, String className) {
+    public BaseProxyMethodImplementor visitStruct(ParsedField field) {
         throw new UnsupportedOperationException("Struct setter must not be specified");
     }
     
