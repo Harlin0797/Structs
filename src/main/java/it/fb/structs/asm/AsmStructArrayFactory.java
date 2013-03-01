@@ -6,9 +6,9 @@ import it.fb.structs.StructData;
 import it.fb.structs.StructPointer;
 import it.fb.structs.bytebuffer.OffsetVisitor;
 import it.fb.structs.impl.AbstractStructArrayFactory;
-import it.fb.structs.internal.SField;
-import it.fb.structs.internal.SField.SFieldVisitor;
-import it.fb.structs.internal.SStructDesc;
+import it.fb.structs.internal.ParsedField;
+import it.fb.structs.internal.ParsedField.ParsedFieldVisitor;
+import it.fb.structs.internal.PStructDesc;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
     }
 
     @Override
-    protected <T> AbstractStructArrayClassFactory<T> newStructArrayClassFactory(Class<T> structInterface, SStructDesc desc) {
+    protected <T> AbstractStructArrayClassFactory<T> newStructArrayClassFactory(Class<T> structInterface, PStructDesc desc) {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS + ClassWriter.COMPUTE_FRAMES);
         String internalName = Type.getInternalName(structInterface) + "__Impl__" + System.identityHashCode(this);
         cw.visit(V1_5, 
@@ -44,7 +44,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
         Builder<T> builder = new Builder<T>(dataFactory, structInterface, cw, internalName);
         OffsetVisitor ov = new LocalOffsetVisitor(4);
 
-        for (SField field : desc.getFields()) {
+        for (ParsedField field : desc.getFields()) {
             int fieldOffset = field.accept(ov);
             builder.addGetter(field.getGetter(), field, fieldOffset);
             if (field.getSetter() != null) {
@@ -154,47 +154,47 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
             this.invokeOpcode = dataFactory.getBufferClass().isInterface() ? INVOKEINTERFACE : INVOKEVIRTUAL;
         }
 
-        public void addGetter(Method getter, SField field, final int offset) {
+        public void addGetter(Method getter, ParsedField field, final int offset) {
             final MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, getter.getName(), Type.getMethodDescriptor(getter), null, null);
             mv.visitCode();
 
-            field.accept(new SFieldVisitor<Void>() {
+            field.accept(new ParsedFieldVisitor<Void>() {
                 @Override
-                public Void visitByte(SField field) {
+                public Void visitByte(ParsedField field) {
                     return primitiveGetter(field, IRETURN, "getByte", "B");
                 }
 
                 @Override
-                public Void visitChar(SField field) {
+                public Void visitChar(ParsedField field) {
                     return primitiveGetter(field, IRETURN, "getChar", "C");
                 }
 
                 @Override
-                public Void visitShort(SField field) {
+                public Void visitShort(ParsedField field) {
                     return primitiveGetter(field, IRETURN, "getShort", "S");
                 }
 
                 @Override
-                public Void visitInt(SField field) {
+                public Void visitInt(ParsedField field) {
                     return primitiveGetter(field, IRETURN, "getInt", "I");
                 }
 
                 @Override
-                public Void visitLong(SField field) {
+                public Void visitLong(ParsedField field) {
                     return primitiveGetter(field, LRETURN, "getLong", "J");
                 }
 
                 @Override
-                public Void visitFloat(SField field) {
+                public Void visitFloat(ParsedField field) {
                     return primitiveGetter(field, FRETURN, "getFloat", "F");
                 }
 
                 @Override
-                public Void visitDouble(SField field) {
+                public Void visitDouble(ParsedField field) {
                     return primitiveGetter(field, DRETURN, "getDouble", "D");
                 }
 
-                private Void primitiveGetter(SField field, int returnOpcode, String method, String typeDescriptor) {
+                private Void primitiveGetter(ParsedField field, int returnOpcode, String method, String typeDescriptor) {
                     mv.visitVarInsn(ALOAD, 0);
                     mv.visitFieldInsn(GETFIELD, internalName, "data", bcDescriptor);
                     mv.visitVarInsn(ALOAD, 0);
@@ -220,7 +220,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 }
 
                 @Override
-                public Void visitStruct(SField field, String className) {
+                public Void visitStruct(ParsedField field, String className) {
                     AbstractStructArrayClassFactory<?> childFactory;
                     try {
                         childFactory = AsmStructArrayFactory.this.getClassFactory(Class.forName(className));
@@ -244,7 +244,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
             mv.visitEnd();
         }
 
-        public void addSetter(Method setter, SField field, final int offset) {
+        public void addSetter(Method setter, ParsedField field, final int offset) {
             final MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, setter.getName(), Type.getMethodDescriptor(setter), null, null);
             mv.visitCode();
             mv.visitVarInsn(ALOAD, 0);
@@ -265,50 +265,50 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 mv.visitInsn(IADD);
             }
 
-            field.accept(new SFieldVisitor<Void>() {
+            field.accept(new ParsedFieldVisitor<Void>() {
                 @Override
-                public Void visitByte(SField field) {
+                public Void visitByte(ParsedField field) {
                     return primitiveSetter(field, ILOAD, "putByte", "B");
                 }
 
                 @Override
-                public Void visitChar(SField field) {
+                public Void visitChar(ParsedField field) {
                     return primitiveSetter(field, ILOAD, "putChar", "C");
                 }
 
                 @Override
-                public Void visitShort(SField field) {
+                public Void visitShort(ParsedField field) {
                     return primitiveSetter(field, ILOAD, "putShort", "S");
                 }
 
                 @Override
-                public Void visitInt(SField field) {
+                public Void visitInt(ParsedField field) {
                     return primitiveSetter(field, ILOAD, "putInt", "I");
                 }
 
                 @Override
-                public Void visitLong(SField field) {
+                public Void visitLong(ParsedField field) {
                     return primitiveSetter(field, LLOAD, "putLong", "J");
                 }
 
                 @Override
-                public Void visitFloat(SField field) {
+                public Void visitFloat(ParsedField field) {
                     return primitiveSetter(field, FLOAD, "putFloat", "F");
                 }
 
                 @Override
-                public Void visitDouble(SField field) {
+                public Void visitDouble(ParsedField field) {
                     return primitiveSetter(field, DLOAD, "putDouble", "D");
                 }
 
-                private Void primitiveSetter(SField field, int loadOpcode, String method, String typeDescriptor) {
+                private Void primitiveSetter(ParsedField field, int loadOpcode, String method, String typeDescriptor) {
                     mv.visitVarInsn(loadOpcode, field.isArray() ? 2 : 1);
                     mv.visitMethodInsn(invokeOpcode, bcInternalName, method, "(I" + typeDescriptor + ")V");
                     return null;
                 }
 
                 @Override
-                public Void visitStruct(SField field, String className) {
+                public Void visitStruct(ParsedField field, String className) {
                     throw new UnsupportedOperationException("Struct setters are not supported (" + field.getName() + ")");
                 }
             });
@@ -614,11 +614,11 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
     
     private final class ChildFieldData {
 
-        private final SField field;
+        private final ParsedField field;
         private final int offset;
         private final AbstractStructArrayClassFactory<?> childClassFactory;
 
-        public ChildFieldData(SField field, int offset, AbstractStructArrayClassFactory<?> childClassFactory) {
+        public ChildFieldData(ParsedField field, int offset, AbstractStructArrayClassFactory<?> childClassFactory) {
             this.field = field;
             this.offset = offset;
             this.childClassFactory = childClassFactory;

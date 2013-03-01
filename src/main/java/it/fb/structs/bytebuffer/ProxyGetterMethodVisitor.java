@@ -1,8 +1,8 @@
 package it.fb.structs.bytebuffer;
 
 import it.fb.structs.bytebuffer.ByteBufferProxyHandlerFactory.SABBDataInvocationHandler;
-import it.fb.structs.internal.SField;
-import it.fb.structs.internal.SField.SFieldVisitor;
+import it.fb.structs.internal.ParsedField;
+import it.fb.structs.internal.ParsedField.ParsedFieldVisitor;
 import java.lang.reflect.Proxy;
 import java.nio.ByteBuffer;
 
@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
  *
  * @author Flavio
  */
-class ProxyGetterMethodVisitor implements SFieldVisitor<IProxyMethodImplementor> {
+class ProxyGetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImplementor> {
     
     private final int offset;
 
@@ -23,7 +23,7 @@ class ProxyGetterMethodVisitor implements SFieldVisitor<IProxyMethodImplementor>
     }
 
     @Override
-    public IProxyMethodImplementor visitByte(SField field) {
+    public IProxyMethodImplementor visitByte(ParsedField field) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -33,7 +33,7 @@ class ProxyGetterMethodVisitor implements SFieldVisitor<IProxyMethodImplementor>
     }
 
     @Override
-    public IProxyMethodImplementor visitChar(SField field) {
+    public IProxyMethodImplementor visitChar(ParsedField field) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -43,7 +43,7 @@ class ProxyGetterMethodVisitor implements SFieldVisitor<IProxyMethodImplementor>
     }
 
     @Override
-    public IProxyMethodImplementor visitShort(SField field) {
+    public IProxyMethodImplementor visitShort(ParsedField field) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -53,7 +53,7 @@ class ProxyGetterMethodVisitor implements SFieldVisitor<IProxyMethodImplementor>
     }
 
     @Override
-    public IProxyMethodImplementor visitInt(SField field) {
+    public IProxyMethodImplementor visitInt(ParsedField field) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -63,7 +63,7 @@ class ProxyGetterMethodVisitor implements SFieldVisitor<IProxyMethodImplementor>
     }
 
     @Override
-    public IProxyMethodImplementor visitLong(SField field) {
+    public IProxyMethodImplementor visitLong(ParsedField field) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -73,7 +73,7 @@ class ProxyGetterMethodVisitor implements SFieldVisitor<IProxyMethodImplementor>
     }
 
     @Override
-    public IProxyMethodImplementor visitFloat(SField field) {
+    public IProxyMethodImplementor visitFloat(ParsedField field) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -83,7 +83,7 @@ class ProxyGetterMethodVisitor implements SFieldVisitor<IProxyMethodImplementor>
     }
 
     @Override
-    public IProxyMethodImplementor visitDouble(SField field) {
+    public IProxyMethodImplementor visitDouble(ParsedField field) {
         return new BaseProxyMethodImplementor() {
             @Override
             public Object run(ByteBuffer data, int baseOffset, Object[] args) {
@@ -93,7 +93,7 @@ class ProxyGetterMethodVisitor implements SFieldVisitor<IProxyMethodImplementor>
     }
 
     @Override
-    public IProxyMethodImplementor visitStruct(SField field, String className) {
+    public IProxyMethodImplementor visitStruct(ParsedField field, String className) {
         final ByteBufferProxyHandlerFactory<?> innerStructHandlerFactory;
         try {
             innerStructHandlerFactory = ByteBufferProxyHandlerFactory.newHandlerFactory(Class.forName(className));

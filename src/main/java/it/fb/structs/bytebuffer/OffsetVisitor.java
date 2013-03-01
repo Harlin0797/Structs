@@ -1,13 +1,13 @@
 package it.fb.structs.bytebuffer;
 
-import it.fb.structs.internal.SField;
-import it.fb.structs.internal.SField.SFieldVisitor;
+import it.fb.structs.internal.ParsedField;
+import it.fb.structs.internal.ParsedField.ParsedFieldVisitor;
 
 /**
  *
  * @author Flavio
  */
-public abstract class OffsetVisitor implements SFieldVisitor<Integer> {
+public abstract class OffsetVisitor implements ParsedFieldVisitor<Integer> {
 
     protected final int alignment;
     private int size = 0;
@@ -26,42 +26,42 @@ public abstract class OffsetVisitor implements SFieldVisitor<Integer> {
     }
 
     @Override
-    public Integer visitByte(SField field) {
+    public Integer visitByte(ParsedField field) {
         return addSize(1, field.getArrayLength());
     }
 
     @Override
-    public Integer visitChar(SField field) {
+    public Integer visitChar(ParsedField field) {
         return addSize(2, field.getArrayLength());
     }
 
     @Override
-    public Integer visitShort(SField field) {
+    public Integer visitShort(ParsedField field) {
         return addSize(2, field.getArrayLength());
     }
 
     @Override
-    public Integer visitInt(SField field) {
+    public Integer visitInt(ParsedField field) {
         return addSize(4, field.getArrayLength());
     }
 
     @Override
-    public Integer visitLong(SField field) {
+    public Integer visitLong(ParsedField field) {
         return addSize(8, field.getArrayLength());
     }
 
     @Override
-    public Integer visitFloat(SField field) {
+    public Integer visitFloat(ParsedField field) {
         return addSize(4, field.getArrayLength());
     }
 
     @Override
-    public Integer visitDouble(SField field) {
+    public Integer visitDouble(ParsedField field) {
         return addSize(8, field.getArrayLength());
     }
 
     @Override
-    public Integer visitStruct(SField field, String className) {
+    public Integer visitStruct(ParsedField field, String className) {
         return addSize(getStructSize(className), field.getArrayLength());
     }
 

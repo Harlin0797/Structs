@@ -3,8 +3,8 @@ package it.fb.structs.bytebuffer;
 import it.fb.structs.StructPointer;
 import static it.fb.structs.Structs.*;
 import it.fb.structs.internal.Parser;
-import it.fb.structs.internal.SField;
-import it.fb.structs.internal.SStructDesc;
+import it.fb.structs.internal.ParsedField;
+import it.fb.structs.internal.PStructDesc;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -62,10 +62,10 @@ class ByteBufferProxyHandlerFactory<T> {
     }
     
     public static <T> ByteBufferProxyHandlerFactory<T> newHandlerFactory(Class<T> structInterface) {
-        SStructDesc desc = Parser.parse(structInterface);
+        PStructDesc desc = Parser.parse(structInterface);
         OffsetVisitor ov = new RecursiveOffsetVisitor(4);
         Map<Method, IProxyMethodImplementor> implementors = new HashMap<Method, IProxyMethodImplementor>();
-        for (SField field : desc.getFields()) {
+        for (ParsedField field : desc.getFields()) {
             int fieldOffset = field.accept(ov);
             implementors.put(field.getGetter(), field.accept(new ProxyGetterMethodVisitor(fieldOffset)));
             if (field.getSetter() != null) {
@@ -152,14 +152,14 @@ class ByteBufferProxyHandlerFactory<T> {
 
         @Override
         protected int getStructSize(String className) {
-            SStructDesc desc;
+            PStructDesc desc;
             try {
                 desc = Parser.parse(Class.forName(className));
             } catch (ClassNotFoundException ex) {
                 throw new IllegalArgumentException(ex);
             }
             RecursiveOffsetVisitor ov = new RecursiveOffsetVisitor(alignment);
-            for (SField field : desc.getFields()) {
+            for (ParsedField field : desc.getFields()) {
                 field.accept(ov);
             }
             return ov.getSize();

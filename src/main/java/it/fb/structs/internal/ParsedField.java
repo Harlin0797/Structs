@@ -6,16 +6,16 @@ import java.lang.reflect.Method;
  *
  * @author Flavio
  */
-public class SField {
+public class ParsedField {
     
-    private final SFieldType type;
+    private final ParsedFieldType type;
     private final int arrayLength;
     private final String name;
     private final int position;
     private final Method getter;
     private final Method setter;
 
-    public SField(SFieldType type, int arrayLength, String name, int position, Method getter, Method setter) {
+    public ParsedField(ParsedFieldType type, int arrayLength, String name, int position, Method getter, Method setter) {
         this.type = type;
         this.arrayLength = arrayLength;
         this.name = name;
@@ -28,7 +28,7 @@ public class SField {
         return arrayLength > 1;
     }
     
-    public SFieldType getType() {
+    public ParsedFieldType getType() {
         return type;
     }
 
@@ -52,46 +52,46 @@ public class SField {
         return position;
     }
 
-    public <T> T accept(final SFieldVisitor<T> visitor) {
-        return type.accept(new SFieldType.SFieldTypeVisitor<T>() {
+    public <T> T accept(final ParsedFieldVisitor<T> visitor) {
+        return type.accept(new ParsedFieldType.SFieldTypeVisitor<T>() {
             @Override
             public T visitByte() {
-                return visitor.visitByte(SField.this);
+                return visitor.visitByte(ParsedField.this);
             }
 
             @Override
             public T visitChar() {
-                return visitor.visitChar(SField.this);
+                return visitor.visitChar(ParsedField.this);
             }
 
             @Override
             public T visitShort() {
-                return visitor.visitShort(SField.this);
+                return visitor.visitShort(ParsedField.this);
             }
 
             @Override
             public T visitInt() {
-                return visitor.visitInt(SField.this);
+                return visitor.visitInt(ParsedField.this);
             }
 
             @Override
             public T visitLong() {
-                return visitor.visitLong(SField.this);
+                return visitor.visitLong(ParsedField.this);
             }
 
             @Override
             public T visitFloat() {
-                return visitor.visitFloat(SField.this);
+                return visitor.visitFloat(ParsedField.this);
             }
 
             @Override
             public T visitDouble() {
-                return visitor.visitDouble(SField.this);
+                return visitor.visitDouble(ParsedField.this);
             }
 
             @Override
             public T visitStruct(String className) {
-                return visitor.visitStruct(SField.this, className);
+                return visitor.visitStruct(ParsedField.this, className);
             }
         });
     }
@@ -101,14 +101,14 @@ public class SField {
         return type + " " + name;
     }
 
-    public interface SFieldVisitor<T> {
-        T visitByte(SField field);
-        T visitChar(SField field);
-        T visitShort(SField field);
-        T visitInt(SField field);
-        T visitLong(SField field);
-        T visitFloat(SField field);
-        T visitDouble(SField field);
-        T visitStruct(SField field, String className);
+    public interface ParsedFieldVisitor<T> {
+        T visitByte(ParsedField field);
+        T visitChar(ParsedField field);
+        T visitShort(ParsedField field);
+        T visitInt(ParsedField field);
+        T visitLong(ParsedField field);
+        T visitFloat(ParsedField field);
+        T visitDouble(ParsedField field);
+        T visitStruct(ParsedField field, String className);
     }
 }

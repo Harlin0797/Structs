@@ -17,15 +17,15 @@ import java.util.Map;
  */
 public class Parser {
     
-    public static SStructDesc parse(Type structInterface) {
+    public static PStructDesc parse(Type structInterface) {
         return parse((Class<?>) structInterface);
     }
 
-    public static SStructDesc parse(Class<?> structInterface) {
+    public static PStructDesc parse(Class<?> structInterface) {
         if (!structInterface.isInterface()) {
             throw new IllegalArgumentException(structInterface + " is not an interface");
         }
-        Map<String, SField> fields = new LinkedHashMap<String, SField>();
+        Map<String, ParsedField> fields = new LinkedHashMap<String, ParsedField>();
         for (Method m : structInterface.getDeclaredMethods()) {
             Field fAnn = m.getAnnotation(Field.class);
             int length = fAnn == null ? 0 : fAnn.length();
@@ -33,21 +33,21 @@ public class Parser {
             if (isGetter(m) || isArrayGetter(m)) {
                 String propName = Introspector.decapitalize(m.getName().substring(3));
                 if (fields.containsKey(propName)) {
-                    SField f = fields.get(propName);
-                    fields.put(propName, new SField(f.getType(),
+                    ParsedField f = fields.get(propName);
+                    fields.put(propName, new ParsedField(f.getType(),
                             Math.max(length, f.getArrayLength()), propName, position, m, f.getSetter()));
                 } else {
-                    fields.put(propName, new SField(SFieldType.typeOf(m.getGenericReturnType()), 
+                    fields.put(propName, new ParsedField(ParsedFieldType.typeOf(m.getGenericReturnType()), 
                             length, propName, position, m, null));
                 }
             } else if (isSetter(m) || isArraySetter(m)) {
                 String propName = Introspector.decapitalize(m.getName().substring(3));
                 if (fields.containsKey(propName)) {
-                    SField f = fields.get(propName);
-                    fields.put(propName, new SField(f.getType(),
+                    ParsedField f = fields.get(propName);
+                    fields.put(propName, new ParsedField(f.getType(),
                             Math.max(length, f.getArrayLength()), propName, f.getPosition(), f.getGetter(), m));
                 } else {
-                    fields.put(propName, new SField(SFieldType.typeOf(m.getParameterTypes()[m.getParameterTypes().length - 1]), 
+                    fields.put(propName, new ParsedField(ParsedFieldType.typeOf(m.getParameterTypes()[m.getParameterTypes().length - 1]), 
                             length, propName, position, null, m));
                 }
             }
@@ -55,14 +55,14 @@ public class Parser {
         if (fields.isEmpty()) {
             throw new IllegalArgumentException("No valid struct fields in " + structInterface);
         }
-        List<SField> sortedFields = new ArrayList<SField>(fields.values());
-        Collections.sort(sortedFields, new Comparator<SField>() {
+        List<ParsedField> sortedFields = new ArrayList<ParsedField>(fields.values());
+        Collections.sort(sortedFields, new Comparator<ParsedField>() {
             @Override
-            public int compare(SField o1, SField o2) {
+            public int compare(ParsedField o1, ParsedField o2) {
                 return Integer.compare(o1.getPosition(), o2.getPosition());
             }
         });
-        return new SStructDesc(structInterface, sortedFields);
+        return new PStructDesc(structInterface, sortedFields);
     }
 
     private static boolean isGetter(Method m) {

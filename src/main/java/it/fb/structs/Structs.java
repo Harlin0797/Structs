@@ -2,9 +2,9 @@ package it.fb.structs;
 
 import it.fb.structs.bytebuffer.StructArrayByteBufferImpl;
 import it.fb.structs.internal.Parser;
-import it.fb.structs.internal.SField;
-import it.fb.structs.internal.SField.SFieldVisitor;
-import it.fb.structs.internal.SStructDesc;
+import it.fb.structs.internal.ParsedField;
+import it.fb.structs.internal.ParsedField.ParsedFieldVisitor;
+import it.fb.structs.internal.PStructDesc;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -41,12 +41,12 @@ public class Structs {
     private static final class StructArrayHashImpl<T> implements StructArray<T> {
 
         private final Class<T> structInterface;
-        private final Map<Method, SField> getters;
-        private final Map<Method, SField> setters;
+        private final Map<Method, ParsedField> getters;
+        private final Map<Method, ParsedField> setters;
         private final List<Map<String, Object>> data;
 
-        public StructArrayHashImpl(Class<T> structInterface, Map<Method, SField> getters, 
-                Map<Method, SField> setters, List<Map<String, Object>> data) {
+        public StructArrayHashImpl(Class<T> structInterface, Map<Method, ParsedField> getters, 
+                Map<Method, ParsedField> setters, List<Map<String, Object>> data) {
             this.structInterface = structInterface;
             this.getters = getters;
             this.setters = setters;
@@ -96,7 +96,7 @@ public class Structs {
 
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                SField field;
+                ParsedField field;
                 if (method.equals(POINTER_AT_METHOD)) {
                     index = (Integer) args[0];
                     return proxy;
@@ -126,14 +126,14 @@ public class Structs {
         }
 
         public static <T> StructArrayHashImpl<T> create(Class<T> structInterface, int size) {
-            SStructDesc desc = Parser.parse(structInterface);
+            PStructDesc desc = Parser.parse(structInterface);
             final Map<String, Object> values = new HashMap<String, Object>();
-            final Map<Method, SField> getters = new HashMap<Method, SField>();
-            final Map<Method, SField> setters = new HashMap<Method, SField>();
+            final Map<Method, ParsedField> getters = new HashMap<Method, ParsedField>();
+            final Map<Method, ParsedField> setters = new HashMap<Method, ParsedField>();
 
             List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
             for (int i = 0; i < size; i++) {
-                for (SField field : desc.getFields()) {
+                for (ParsedField field : desc.getFields()) {
                     getters.put(field.getGetter(), field);
                     setters.put(field.getSetter(), field);
                     if (field.getArrayLength() <= 1) {
@@ -152,45 +152,45 @@ public class Structs {
             return new StructArrayHashImpl<T>(structInterface, getters, setters, data);
         }
         
-        private static SFieldVisitor<Object> FieldValueVisitor = new SFieldVisitor<Object>() {
+        private static ParsedFieldVisitor<Object> FieldValueVisitor = new ParsedFieldVisitor<Object>() {
             
             @Override
-            public Object visitByte(SField field) {
+            public Object visitByte(ParsedField field) {
                 return Byte.valueOf((byte)0);
             }
 
             @Override
-            public Object visitChar(SField field) {
+            public Object visitChar(ParsedField field) {
                 return Character.valueOf('\0');
             }
 
             @Override
-            public Object visitShort(SField field) {
+            public Object visitShort(ParsedField field) {
                 return Short.valueOf((short) 0);
             }
 
             @Override
-            public Object visitInt(SField field) {
+            public Object visitInt(ParsedField field) {
                 return Integer.valueOf(0);
             }
 
             @Override
-            public Object visitLong(SField field) {
+            public Object visitLong(ParsedField field) {
                 return Long.valueOf(0L);
             }
 
             @Override
-            public Object visitFloat(SField field) {
+            public Object visitFloat(ParsedField field) {
                 return Float.valueOf(0.0f);
             }
 
             @Override
-            public Object visitDouble(SField field) {
+            public Object visitDouble(ParsedField field) {
                 return Double.valueOf(0.0);
             }
 
             @Override
-            public Object visitStruct(SField field, String className) {
+            public Object visitStruct(ParsedField field, String className) {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
         };

@@ -8,7 +8,7 @@ import java.lang.reflect.Type;
  *
  * @author Flavio
  */
-public abstract class SFieldType {
+public abstract class ParsedFieldType {
     
     public abstract String getClassName();
     
@@ -27,7 +27,7 @@ public abstract class SFieldType {
         T visitDouble();
     }
     
-    public static SFieldType typeOf(Type javaType) {
+    public static ParsedFieldType typeOf(Type javaType) {
         if (javaType == Byte.TYPE) {
             return STypeByte;
         } else if (javaType == Short.TYPE) {
@@ -50,7 +50,7 @@ public abstract class SFieldType {
         }
     }
     
-    static abstract class SBaseType extends SFieldType {
+    static abstract class SBaseType extends ParsedFieldType {
         protected final String className;
         protected final int size;
 
@@ -81,49 +81,49 @@ public abstract class SFieldType {
         }
     }
     
-    public static final SFieldType STypeByte = new SBaseType(Byte.TYPE, 1) {
+    public static final ParsedFieldType STypeByte = new SBaseType(Byte.TYPE, 1) {
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
             return visitor.visitByte();
         }
     };
     
-    public static final SFieldType STypeShort = new SBaseType(Short.TYPE, 2) {
+    public static final ParsedFieldType STypeShort = new SBaseType(Short.TYPE, 2) {
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
             return visitor.visitShort();
         }
     };
     
-    public static final SFieldType STypeChar = new SBaseType(Character.TYPE, 2) {
+    public static final ParsedFieldType STypeChar = new SBaseType(Character.TYPE, 2) {
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
             return visitor.visitChar();
         }
     };
     
-    public static final SFieldType STypeInt = new SBaseType(Integer.TYPE, 4) {
+    public static final ParsedFieldType STypeInt = new SBaseType(Integer.TYPE, 4) {
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
             return visitor.visitInt();
         }
     };
     
-    public static final SFieldType STypeLong = new SBaseType(Long.TYPE, 8) {
+    public static final ParsedFieldType STypeLong = new SBaseType(Long.TYPE, 8) {
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
             return visitor.visitLong();
         }
     };
     
-    public static final SFieldType STypeFloat = new SBaseType(Float.TYPE, 4) {
+    public static final ParsedFieldType STypeFloat = new SBaseType(Float.TYPE, 4) {
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
             return visitor.visitFloat();
         }
     };
     
-    public static final SFieldType STypeDouble = new SBaseType(Double.TYPE, 8) {
+    public static final ParsedFieldType STypeDouble = new SBaseType(Double.TYPE, 8) {
         @Override
         public <T> T accept(SFieldTypeVisitor<T> visitor) {
             return visitor.visitDouble();

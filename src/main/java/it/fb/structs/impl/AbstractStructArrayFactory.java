@@ -5,8 +5,8 @@ import it.fb.structs.StructArray;
 import it.fb.structs.StructData;
 import it.fb.structs.bytebuffer.OffsetVisitor;
 import it.fb.structs.internal.Parser;
-import it.fb.structs.internal.SField;
-import it.fb.structs.internal.SStructDesc;
+import it.fb.structs.internal.ParsedField;
+import it.fb.structs.internal.PStructDesc;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,8 +17,8 @@ import java.util.Map;
 public abstract class AbstractStructArrayFactory<D extends StructData> implements IStructArrayFactory<D> {
 
     protected final StructData.Factory<D> dataFactory;
-    private final Map<Class<?>, SStructDesc> structDescriptors =
-            new HashMap<Class<?>, SStructDesc>();
+    private final Map<Class<?>, PStructDesc> structDescriptors =
+            new HashMap<Class<?>, PStructDesc>();
     private final Map<Class<?>, AbstractStructArrayClassFactory<?>> classCache = 
             new HashMap<Class<?>, AbstractStructArrayClassFactory<?>>();
 
@@ -45,8 +45,8 @@ public abstract class AbstractStructArrayFactory<D extends StructData> implement
         return (AbstractStructArrayClassFactory<T>) classFactory;
     }
 
-    protected SStructDesc getStructDescriptor(Class<?> structInterface) {
-        SStructDesc ret = structDescriptors.get(structInterface);
+    protected PStructDesc getStructDescriptor(Class<?> structInterface) {
+        PStructDesc ret = structDescriptors.get(structInterface);
         if (ret == null) {
             ret = Parser.parse(structInterface);
             structDescriptors.put(structInterface, ret);
@@ -54,7 +54,7 @@ public abstract class AbstractStructArrayFactory<D extends StructData> implement
         return ret;
     }
 
-    protected abstract <T> AbstractStructArrayClassFactory<T> newStructArrayClassFactory(Class<T> structInterface, SStructDesc structDesc);
+    protected abstract <T> AbstractStructArrayClassFactory<T> newStructArrayClassFactory(Class<T> structInterface, PStructDesc structDesc);
     
     protected abstract class AbstractStructArrayClassFactory<T> {
         public abstract Class<?> getStructImplementation();
@@ -72,7 +72,7 @@ public abstract class AbstractStructArrayFactory<D extends StructData> implement
         protected int getStructSize(String className) {
             try {
                 LocalOffsetVisitor ov = new LocalOffsetVisitor(alignment);
-                for (SField field : getStructDescriptor(Class.forName(className)).getFields()) {
+                for (ParsedField field : getStructDescriptor(Class.forName(className)).getFields()) {
                     field.accept(ov);
                 }
                 return ov.getSize();

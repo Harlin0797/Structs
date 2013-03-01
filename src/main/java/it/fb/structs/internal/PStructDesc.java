@@ -9,19 +9,19 @@ import java.util.Map;
  *
  * @author Flavio
  */
-public class SStructDesc {
+public class PStructDesc {
     
     private final Class<?> javaInterface;
-    private final Map<String, SField> fields = new LinkedHashMap<String, SField>();
+    private final Map<String, ParsedField> fields = new LinkedHashMap<String, ParsedField>();
 
-    public SStructDesc(Class<?> structClass, List<SField> fields) {
+    public PStructDesc(Class<?> structClass, List<ParsedField> fields) {
         this.javaInterface = structClass;
-        for (SField field : fields) {
+        for (ParsedField field : fields) {
             this.fields.put(field.getName(), field);
         }
     }
 
-    public Collection<SField> getFields() {
+    public Collection<ParsedField> getFields() {
         return fields.values();
     }
 
