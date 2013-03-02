@@ -34,20 +34,20 @@ public class Parser {
                 if (fields.containsKey(propName)) {
                     ParsedField f = fields.get(propName);
                     fields.put(propName, new ParsedField(f.getType(),
-                            Math.max(length, f.getArrayLength()), propName, position, m, f.getSetter()));
+                            Math.max(length, f.getArrayLength()), propName, position, true, f.hasSetter()));
                 } else {
                     fields.put(propName, new ParsedField(ParsedFieldType.typeOf(m.getGenericReturnType()), 
-                            length, propName, position, m, null));
+                            length, propName, position, true, false));
                 }
             } else if (isSetter(m) || isArraySetter(m)) {
                 String propName = m.getName().substring(3);
                 if (fields.containsKey(propName)) {
                     ParsedField f = fields.get(propName);
                     fields.put(propName, new ParsedField(f.getType(),
-                            Math.max(length, f.getArrayLength()), propName, f.getPosition(), f.getGetter(), m));
+                            Math.max(length, f.getArrayLength()), propName, f.getPosition(), f.hasSetter(), true));
                 } else {
                     fields.put(propName, new ParsedField(ParsedFieldType.typeOf(m.getParameterTypes()[m.getParameterTypes().length - 1]), 
-                            length, propName, position, null, m));
+                            length, propName, position, false, true));
                 }
             }
         }

@@ -15,7 +15,9 @@ public abstract class ParsedFieldType {
     public abstract <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter);
     
     public abstract int getSize();
-    
+
+    public abstract Class<?> getPrimitiveClass();
+
     public static interface SFieldTypeVisitor<R, P> {
         R visitBoolean(P parameter);
         R visitByte(P parameter);
@@ -55,10 +57,6 @@ public abstract class ParsedFieldType {
         protected final String className;
         protected final int size;
 
-        public SBaseType(Class<?> javaType, int size) {
-            this(javaType.getName(), size);
-        }
-
         public SBaseType(String className, int size) {
             this.className = className;
             this.size = size;
@@ -77,54 +75,74 @@ public abstract class ParsedFieldType {
         }
 
         @Override
+        public Class<?> getPrimitiveClass() {
+            throw new UnsupportedOperationException("Not a primitive type: " + className);
+        }
+
+        @Override
         public String toString() {
             return className;
         }
     }
     
-    public static final ParsedFieldType STypeByte = new SBaseType(Byte.TYPE, 1) {
+    static abstract class SPrimitiveType extends SBaseType {
+
+        private final Class<?> javaType;
+
+        public SPrimitiveType(Class<?> javaType, int size) {
+            super(javaType.getName(), size);
+            this.javaType = javaType;
+        }
+
+        @Override
+        public Class<?> getPrimitiveClass() {
+            return javaType;
+        }
+    }
+
+    public static final ParsedFieldType STypeByte = new SPrimitiveType(Byte.TYPE, 1) {
         @Override
         public <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter) {
             return visitor.visitByte(parameter);
         }
     };
     
-    public static final ParsedFieldType STypeShort = new SBaseType(Short.TYPE, 2) {
+    public static final ParsedFieldType STypeShort = new SPrimitiveType(Short.TYPE, 2) {
         @Override
         public <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter) {
             return visitor.visitShort(parameter);
         }
     };
     
-    public static final ParsedFieldType STypeChar = new SBaseType(Character.TYPE, 2) {
+    public static final ParsedFieldType STypeChar = new SPrimitiveType(Character.TYPE, 2) {
         @Override
         public <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter) {
             return visitor.visitChar(parameter);
         }
     };
     
-    public static final ParsedFieldType STypeInt = new SBaseType(Integer.TYPE, 4) {
+    public static final ParsedFieldType STypeInt = new SPrimitiveType(Integer.TYPE, 4) {
         @Override
         public <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter) {
             return visitor.visitInt(parameter);
         }
     };
     
-    public static final ParsedFieldType STypeLong = new SBaseType(Long.TYPE, 8) {
+    public static final ParsedFieldType STypeLong = new SPrimitiveType(Long.TYPE, 8) {
         @Override
         public <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter) {
             return visitor.visitLong(parameter);
         }
     };
     
-    public static final ParsedFieldType STypeFloat = new SBaseType(Float.TYPE, 4) {
+    public static final ParsedFieldType STypeFloat = new SPrimitiveType(Float.TYPE, 4) {
         @Override
         public <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter) {
             return visitor.visitFloat(parameter);
         }
     };
     
-    public static final ParsedFieldType STypeDouble = new SBaseType(Double.TYPE, 8) {
+    public static final ParsedFieldType STypeDouble = new SPrimitiveType(Double.TYPE, 8) {
         @Override
         public <R, P> R accept(SFieldTypeVisitor<R, P> visitor, P parameter) {
             return visitor.visitDouble(parameter);
@@ -134,7 +152,7 @@ public abstract class ParsedFieldType {
     public static class STypeStruct extends SBaseType {
 
         public STypeStruct(Class<?> structClass) {
-            super(structClass, -1);
+            super(structClass.getName(), -1);
         }
 
         public STypeStruct(String className) {

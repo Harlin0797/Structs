@@ -12,16 +12,16 @@ public class ParsedField {
     private final int arrayLength;
     private final String name;
     private final int position;
-    private final Method getter;
-    private final Method setter;
+    private final boolean hasGetter;
+    private final boolean hasSetter;
 
-    public ParsedField(ParsedFieldType type, int arrayLength, String name, int position, Method getter, Method setter) {
+    public ParsedField(ParsedFieldType type, int arrayLength, String name, int position, boolean hasGetter, boolean hasSetter) {
         this.type = type;
         this.arrayLength = arrayLength;
         this.name = name;
         this.position = position;
-        this.getter = getter;
-        this.setter = setter;
+        this.hasGetter = hasGetter;
+        this.hasSetter = hasSetter;
     }
 
     public boolean isArray() {
@@ -40,24 +40,16 @@ public class ParsedField {
         return name;
     }
 
-    public Method getGetter() {
-        return getter;
-    }
-
-    public Method getSetter() {
-        return setter;
-    }
-
     public int getPosition() {
         return position;
     }
 
     public boolean hasGetter() {
-        return getter != null;
+        return hasGetter;
     }
 
     public boolean hasSetter() {
-        return setter != null;
+        return hasSetter;
     }
 
     public <R, P> R accept(final ParsedFieldVisitor<R, P> visitor, P parameter) {
@@ -111,6 +103,30 @@ public class ParsedField {
     @Override
     public String toString() {
         return type + " " + name;
+    }
+
+    public Method findGetterOn(Class<?> claxx) {
+        try {
+            if (isArray()) {
+                return claxx.getMethod("get" + name, Integer.TYPE);
+            } else {
+                return claxx.getMethod("get" + name);
+            }
+        } catch (NoSuchMethodException ex) {
+            throw new IllegalArgumentException("No getter for " + name + " on class " + claxx, ex);
+        }
+    }
+
+    public Method findSetterOn(Class<?> claxx) {
+        try {
+            if (isArray()) {
+                return claxx.getMethod("set" + name, Integer.TYPE, type.getPrimitiveClass());
+            } else {
+                return claxx.getMethod("set" + name, type.getPrimitiveClass());
+            }
+        } catch (NoSuchMethodException ex) {
+            throw new IllegalArgumentException("No getter for " + name + " on class " + claxx, ex);
+        }
     }
 
     public interface ParsedFieldVisitor<R, P> {

@@ -134,8 +134,10 @@ public class Structs {
             List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
             for (int i = 0; i < size; i++) {
                 for (ParsedField field : desc.getFields()) {
-                    getters.put(field.getGetter(), field);
-                    setters.put(field.getSetter(), field);
+                    getters.put(field.findGetterOn(structInterface), field);
+                    if (field.hasSetter()) {
+                        setters.put(field.findSetterOn(structInterface), field);
+                    }
                     if (field.getArrayLength() <= 1) {
                         values.put(field.getName(), field.accept(FieldValueVisitor, null));
                     } else {
