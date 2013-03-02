@@ -46,9 +46,9 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
 
         for (ParsedField field : desc.getFields()) {
             int fieldOffset = field.accept(ov, null);
-            builder.addGetter(field.getGetter(), field, fieldOffset);
-            if (field.getSetter() != null) {
-                builder.addSetter(field.getSetter(), field, fieldOffset);
+            builder.addGetter(field, fieldOffset);
+            if (field.hasSetter()) {
+                builder.addSetter(field, fieldOffset);
             }
         }
 
@@ -154,10 +154,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
             this.invokeOpcode = dataFactory.getBufferClass().isInterface() ? INVOKEINTERFACE : INVOKEVIRTUAL;
         }
 
-        public void addGetter(Method getter, ParsedField field, final int offset) {
-            final MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, getter.getName(), Type.getMethodDescriptor(getter), null, null);
-            mv.visitCode();
-
+        public void addGetter(ParsedField field, final int offset) {
             field.accept(new ParsedFieldVisitor<Void, Void>() {
                 @Override
                 public Void visitBoolean(ParsedField field, Void p) {
@@ -199,6 +196,12 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 }
 
                 private Void primitiveGetter(ParsedField field, int returnOpcode, String method, String typeDescriptor) {
+                    MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, 
+                            "get" + field.getName(),
+                            (field.isArray() ? "(I)" : "()") + typeDescriptor,
+                            (field.isArray() ? "(I)" : "()") + getGenericDescriptor(StructPointer.class, structInterface),
+                            null);
+                    mv.visitCode();
                     mv.visitVarInsn(ALOAD, 0);
                     mv.visitFieldInsn(GETFIELD, internalName, "data", bcDescriptor);
                     mv.visitVarInsn(ALOAD, 0);
@@ -220,19 +223,26 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                     mv.visitMethodInsn(invokeOpcode, bcInternalName, method, "(I)" + typeDescriptor);
                     mv.visitInsn(returnOpcode);
                     mv.visitMaxs(4, 2);
+                    mv.visitEnd();
                     return null;
                 }
 
                 @Override
                 public Void visitStruct(ParsedField field, Void p) {
-                    AbstractStructArrayClassFactory<?> childFactory;
+                    Class<?> childClass;
                     try {
-                        childFactory = AsmStructArrayFactory.this.getClassFactory(
-                                Class.forName(field.getType().getClassName()));
+                        childClass = Class.forName(field.getType().getClassName());
                     } catch (ClassNotFoundException ex) {
                         throw new IllegalStateException(ex);
                     }
+                    AbstractStructArrayClassFactory<?> childFactory = AsmStructArrayFactory.this.getClassFactory(
+                            childClass);
                     childFields.add(new ChildFieldData(field, offset, childFactory));
+                    
+                    MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, 
+                            "get" + field.getName(),
+                            (field.isArray() ? "(I)" : "()") + Type.getDescriptor(StructPointer.class),
+                            null, null);
                     mv.visitVarInsn(ALOAD, 0);
                     mv.visitFieldInsn(GETFIELD, internalName, "_" + field.getName(), Type.getDescriptor(childFactory.getStructImplementation()));
                     if (field.isArray()) {
@@ -242,34 +252,13 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                     }
                     mv.visitInsn(ARETURN);
                     mv.visitMaxs(2, 2);
+                    mv.visitEnd();
                     return null;
                 }
             }, null);
-            
-            mv.visitEnd();
         }
 
-        public void addSetter(Method setter, ParsedField field, final int offset) {
-            final MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, setter.getName(), Type.getMethodDescriptor(setter), null, null);
-            mv.visitCode();
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitFieldInsn(GETFIELD, internalName, "data", bcDescriptor);
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitFieldInsn(GETFIELD, internalName, "position", "I");
-            if (offset != 0) {
-                visitInsnConst(mv, offset);
-                mv.visitInsn(IADD);
-            }
-            
-            if (field.isArray()) {
-                mv.visitVarInsn(ILOAD, 1);
-                if (field.getType().getSize() != 1) {
-                    visitInsnConst(mv, field.getType().getSize());
-                    mv.visitInsn(IMUL);
-                }
-                mv.visitInsn(IADD);
-            }
-
+        public void addSetter(ParsedField field, final int offset) {
             field.accept(new ParsedFieldVisitor<Void, Void>() {
                 @Override
                 public Void visitBoolean(ParsedField field, Void p) {
@@ -311,8 +300,33 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 }
 
                 private Void primitiveSetter(ParsedField field, int loadOpcode, String method, String typeDescriptor) {
+                    MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, 
+                            "set" + field.getName(),
+                            (field.isArray() ? "(I" : "(") + typeDescriptor + ")V",
+                            null, null);
+                    mv.visitCode();
+                    mv.visitVarInsn(ALOAD, 0);
+                    mv.visitFieldInsn(GETFIELD, internalName, "data", bcDescriptor);
+                    mv.visitVarInsn(ALOAD, 0);
+                    mv.visitFieldInsn(GETFIELD, internalName, "position", "I");
+                    if (offset != 0) {
+                        visitInsnConst(mv, offset);
+                        mv.visitInsn(IADD);
+                    }
+
+                    if (field.isArray()) {
+                        mv.visitVarInsn(ILOAD, 1);
+                        if (field.getType().getSize() != 1) {
+                            visitInsnConst(mv, field.getType().getSize());
+                            mv.visitInsn(IMUL);
+                        }
+                        mv.visitInsn(IADD);
+                    }
                     mv.visitVarInsn(loadOpcode, field.isArray() ? 2 : 1);
                     mv.visitMethodInsn(invokeOpcode, bcInternalName, method, "(I" + typeDescriptor + ")V");
+                    mv.visitInsn(RETURN);
+                    mv.visitMaxs(4, 3);
+                    mv.visitEnd();
                     return null;
                 }
 
@@ -321,10 +335,6 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                     throw new UnsupportedOperationException("Struct setters are not supported (" + field.getName() + ")");
                 }
             }, null);
-
-            mv.visitInsn(RETURN);
-            mv.visitMaxs(4, 3);
-            mv.visitEnd();
         }
 
         public AsmStructArrayClassFactory<T> build(int structSize) {

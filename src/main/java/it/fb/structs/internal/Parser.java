@@ -1,7 +1,6 @@
 package it.fb.structs.internal;
 
 import it.fb.structs.Field;
-import java.beans.Introspector;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -31,7 +30,7 @@ public class Parser {
             int length = fAnn == null ? 0 : fAnn.length();
             int position = fAnn == null ? Integer.MAX_VALUE : fAnn.position();
             if (isGetter(m) || isArrayGetter(m)) {
-                String propName = Introspector.decapitalize(m.getName().substring(3));
+                String propName = m.getName().substring(3);
                 if (fields.containsKey(propName)) {
                     ParsedField f = fields.get(propName);
                     fields.put(propName, new ParsedField(f.getType(),
@@ -41,7 +40,7 @@ public class Parser {
                             length, propName, position, m, null));
                 }
             } else if (isSetter(m) || isArraySetter(m)) {
-                String propName = Introspector.decapitalize(m.getName().substring(3));
+                String propName = m.getName().substring(3);
                 if (fields.containsKey(propName)) {
                     ParsedField f = fields.get(propName);
                     fields.put(propName, new ParsedField(f.getType(),

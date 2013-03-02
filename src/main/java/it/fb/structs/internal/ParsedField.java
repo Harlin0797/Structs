@@ -52,6 +52,14 @@ public class ParsedField {
         return position;
     }
 
+    public boolean hasGetter() {
+        return getter != null;
+    }
+
+    public boolean hasSetter() {
+        return setter != null;
+    }
+
     public <R, P> R accept(final ParsedFieldVisitor<R, P> visitor, P parameter) {
         return type.accept(new ParsedFieldType.SFieldTypeVisitor<R, P>() {
             @Override
