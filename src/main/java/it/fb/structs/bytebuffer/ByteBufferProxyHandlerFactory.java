@@ -2,9 +2,9 @@ package it.fb.structs.bytebuffer;
 
 import it.fb.structs.StructPointer;
 import static it.fb.structs.Structs.*;
+import it.fb.structs.apt.PStructDesc;
+import it.fb.structs.apt.ParsedField;
 import it.fb.structs.internal.Parser;
-import it.fb.structs.internal.ParsedField;
-import it.fb.structs.internal.PStructDesc;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;

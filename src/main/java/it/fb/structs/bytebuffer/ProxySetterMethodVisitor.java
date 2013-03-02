@@ -1,7 +1,7 @@
 package it.fb.structs.bytebuffer;
 
-import it.fb.structs.internal.ParsedField;
-import it.fb.structs.internal.ParsedField.ParsedFieldVisitor;
+import it.fb.structs.apt.ParsedField;
+import it.fb.structs.apt.ParsedFieldVisitor;
 import java.nio.ByteBuffer;
 
 /**

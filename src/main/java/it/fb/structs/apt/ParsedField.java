@@ -2,6 +2,7 @@ package it.fb.structs.apt;
 
 import it.fb.structs.Field;
 import it.fb.structs.apt.pattern.ParseException;
+import java.lang.reflect.Method;
 import java.util.Comparator;
 
 /**
@@ -44,6 +45,14 @@ public final class ParsedField {
 
     public int getArrayLength() {
         return arrayLength;
+    }
+
+    public boolean hasGetter() {
+        return hasGetter;
+    }
+
+    public boolean hasSetter() {
+        return hasSetter;
     }
 
     boolean isComplete() {
@@ -90,7 +99,7 @@ public final class ParsedField {
         }, parameter);
     }
 
-    ParsedField mergeWith(ParsedField other) {
+    public ParsedField mergeWith(ParsedField other) {
         if (other == null) {
             return this;
         }
@@ -115,7 +124,31 @@ public final class ParsedField {
         return new ParsedField(name, type, this.arrayLength == 0 ? other.arrayLength : this.arrayLength, this.position == Integer.MAX_VALUE ? other.position : this.position, this.hasGetter || other.hasGetter, this.hasSetter || other.hasSetter);
     }
 
-    static ParsedField newWithGetter(String name, ParsedFieldType type, Field annotation) {
+    public Method findGetterOn(Class<?> claxx) {
+        try {
+            if (isArray()) {
+                return claxx.getMethod("get" + name, Integer.TYPE);
+            } else {
+                return claxx.getMethod("get" + name);
+            }
+        } catch (NoSuchMethodException ex) {
+            throw new IllegalArgumentException("No getter for " + name + " on class " + claxx, ex);
+        }
+    }
+
+    public Method findSetterOn(Class<?> claxx) {
+        try {
+            if (isArray()) {
+                return claxx.getMethod("set" + name, Integer.TYPE, type.getPrimitiveClass());
+            } else {
+                return claxx.getMethod("set" + name, type.getPrimitiveClass());
+            }
+        } catch (NoSuchMethodException ex) {
+            throw new IllegalArgumentException("No getter for " + name + " on class " + claxx, ex);
+        }
+    }
+
+    public static ParsedField newWithGetter(String name, ParsedFieldType type, Field annotation) {
         if (annotation == null) {
             return new ParsedField(name, type, 0, Integer.MAX_VALUE, true, false);
         } else {
@@ -123,7 +156,7 @@ public final class ParsedField {
         }
     }
 
-    static ParsedField newWithSetter(String name, ParsedFieldType type, Field annotation) {
+    public static ParsedField newWithSetter(String name, ParsedFieldType type, Field annotation) {
         if (annotation == null) {
             return new ParsedField(name, type, 0, Integer.MAX_VALUE, false, true);
         } else {

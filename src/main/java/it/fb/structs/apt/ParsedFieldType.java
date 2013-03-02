@@ -1,5 +1,7 @@
 package it.fb.structs.apt;
 
+import java.lang.reflect.Type;
+
 /**
  *
  * @author Flavio
@@ -14,8 +16,14 @@ public abstract class ParsedFieldType {
 
     public abstract boolean isPrimitive();
 
+    public abstract Class<?> getPrimitiveClass();
+
     public static ParsedFieldType typeOf(Class<?> typeClass) {
         return typeOf(typeClass.getName());
+    }
+
+    public static ParsedFieldType typeOf(Type type) {
+        return typeOf((Class<?>) type);
     }
 
     public static ParsedFieldType typeOf(String typeName) {
@@ -41,20 +49,12 @@ public abstract class ParsedFieldType {
     private static abstract class PBaseType extends ParsedFieldType {
         protected final String typeName;
         protected final int size;
-        protected final boolean primitive;
 
-        public PBaseType(String typeName, int size, boolean primitive) {
+        public PBaseType(String typeName, int size) {
             this.typeName = typeName;
             this.size = size;
-            this.primitive = primitive;
         }
         
-        protected PBaseType(Class<?> javaType, int size) {
-            this.typeName = javaType.getName();
-            this.size = size;
-            this.primitive = javaType.isPrimitive();
-        }
-
         @Override
         public String getTypeName() {
             return typeName;
@@ -70,7 +70,12 @@ public abstract class ParsedFieldType {
 
         @Override
         public boolean isPrimitive() {
-            return primitive;
+            return false;
+        }
+
+        @Override
+        public Class<?> getPrimitiveClass() {
+            throw new UnsupportedOperationException("Type is not primitive: " + typeName);
         }
 
         @Override
@@ -79,56 +84,75 @@ public abstract class ParsedFieldType {
         }
     }
     
-    public static final ParsedFieldType PFTBoolean = new PBaseType(Boolean.TYPE, 1) {
+    private static abstract class PPrimitiveType extends PBaseType {
+        private final Class<?> javaType;
+
+        public PPrimitiveType(Class<?> javaType, int size) {
+            super(javaType.getName(), size);
+            this.javaType = javaType;
+        }
+
+        @Override
+        public boolean isPrimitive() {
+            return true;
+        }
+
+        @Override
+        public Class<?> getPrimitiveClass() {
+            return javaType;
+        }
+    }
+    
+    public static final ParsedFieldType PFTBoolean = new PPrimitiveType(Boolean.TYPE, 1) {
         @Override
         public <R, P> R accept(PFieldTypeVisitor<R, P> visitor, P parameter) {
             return visitor.visitBoolean(parameter);
         }
     };
     
-    public static final ParsedFieldType PFTByte = new PBaseType(Byte.TYPE, 1) {
+    public static final ParsedFieldType PFTByte = new PPrimitiveType(Byte.TYPE, 1) {
         @Override
         public <R, P> R accept(PFieldTypeVisitor<R, P> visitor, P parameter) {
             return visitor.visitByte(parameter);
         }
     };
     
-    public static final ParsedFieldType PFTShort = new PBaseType(Short.TYPE, 2) {
+    public static final ParsedFieldType PFTShort = new PPrimitiveType(Short.TYPE, 2) {
         @Override
         public <R, P> R accept(PFieldTypeVisitor<R, P> visitor, P parameter) {
             return visitor.visitShort(parameter);
         }
     };
     
-    public static final ParsedFieldType PFTChar = new PBaseType(Character.TYPE, 2) {
+    public static final ParsedFieldType PFTChar = new PPrimitiveType(Character.TYPE, 2) {
         @Override
         public <R, P> R accept(PFieldTypeVisitor<R, P> visitor, P parameter) {
             return visitor.visitChar(parameter);
         }
     };
     
-    public static final ParsedFieldType PFTInt = new PBaseType(Integer.TYPE, 4) {
+    public static final ParsedFieldType PFTInt = new PPrimitiveType(Integer.TYPE, 4) {
         @Override
         public <R, P> R accept(PFieldTypeVisitor<R, P> visitor, P parameter) {
             return visitor.visitInt(parameter);
         }
     };
     
-    public static final ParsedFieldType PFTLong = new PBaseType(Long.TYPE, 8) {
+    public static final ParsedFieldType PFTLong = new PPrimitiveType(Long.TYPE, 8) {
         @Override
         public <R, P> R accept(PFieldTypeVisitor<R, P> visitor, P parameter) {
             return visitor.visitLong(parameter);
         }
     };
     
-    public static final ParsedFieldType PFTFloat = new PBaseType(Float.TYPE, 4) {
+    public static final ParsedFieldType PFTFloat = new PPrimitiveType(Float.TYPE, 4) {
         @Override
         public <R, P> R accept(PFieldTypeVisitor<R, P> visitor, P parameter) {
             return visitor.visitFloat(parameter);
         }
     };
     
-    public static final ParsedFieldType PFTDouble = new PBaseType(Double.TYPE, 8) {
+    public static final ParsedFieldType PFTDouble = new PPrimitiveType(Double.TYPE, 8) {
         @Override
         public <R, P> R accept(PFieldTypeVisitor<R, P> visitor, P parameter) {
             return visitor.visitDouble(parameter);
@@ -138,7 +162,7 @@ public abstract class ParsedFieldType {
     private static class PTypeStruct extends PBaseType {
 
         public PTypeStruct(String typeName) {
-            super(typeName, -1, false);
+            super(typeName, -1);
         }
 
         @Override

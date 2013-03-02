@@ -1,8 +1,8 @@
 package it.fb.structs.bytebuffer;
 
+import it.fb.structs.apt.ParsedField;
+import it.fb.structs.apt.ParsedFieldVisitor;
 import it.fb.structs.bytebuffer.ByteBufferProxyHandlerFactory.SABBDataInvocationHandler;
-import it.fb.structs.internal.ParsedField;
-import it.fb.structs.internal.ParsedField.ParsedFieldVisitor;
 import java.lang.reflect.Proxy;
 import java.nio.ByteBuffer;
 
@@ -97,7 +97,7 @@ class ProxyGetterMethodVisitor implements ParsedFieldVisitor<IProxyMethodImpleme
         final ByteBufferProxyHandlerFactory<?> innerStructHandlerFactory;
         try {
             innerStructHandlerFactory = ByteBufferProxyHandlerFactory.newHandlerFactory(
-                    Class.forName(field.getType().getClassName()));
+                    Class.forName(field.getType().getTypeName()));
         } catch (ClassNotFoundException ex) {
             throw new IllegalStateException(ex);
         }

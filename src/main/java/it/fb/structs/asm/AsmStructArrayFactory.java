@@ -4,11 +4,11 @@ import it.fb.structs.IStructArrayFactory;
 import it.fb.structs.StructArray;
 import it.fb.structs.StructData;
 import it.fb.structs.StructPointer;
+import it.fb.structs.apt.PStructDesc;
+import it.fb.structs.apt.ParsedField;
+import it.fb.structs.apt.ParsedFieldVisitor;
 import it.fb.structs.bytebuffer.OffsetVisitor;
 import it.fb.structs.impl.AbstractStructArrayFactory;
-import it.fb.structs.internal.PStructDesc;
-import it.fb.structs.internal.ParsedField;
-import it.fb.structs.internal.ParsedField.ParsedFieldVisitor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -231,7 +231,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 public Void visitStruct(ParsedField field, Void p) {
                     Class<?> childClass;
                     try {
-                        childClass = Class.forName(field.getType().getClassName());
+                        childClass = Class.forName(field.getType().getTypeName());
                     } catch (ClassNotFoundException ex) {
                         throw new IllegalStateException(ex);
                     }

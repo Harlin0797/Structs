@@ -1,90 +1,136 @@
 package it.fb.structs.internal;
 
 import it.fb.structs.Field;
+import it.fb.structs.StructPointer;
+import it.fb.structs.apt.AbstractParser;
+import it.fb.structs.apt.PStructDesc;
+import it.fb.structs.apt.ParsedField;
+import it.fb.structs.apt.ParsedFieldType;
+import it.fb.structs.apt.pattern.ParseException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
  * @author Flavio
  */
-public class Parser {
-    
+public class Parser extends AbstractParser<Method> {
+
     public static PStructDesc parse(Type structInterface) {
-        return parse((Class<?>) structInterface);
+        Parser parser = new Parser((Class<?>) structInterface);
+        parser.doParse((Class<?>) structInterface);
+        return parser.build();
     }
 
-    public static PStructDesc parse(Class<?> structInterface) {
+    private Parser(Class<?> structInterface) {
+        super(structInterface.getName(), PATTERNS);
+    }
+
+    private void doParse(Class<?> structInterface) {
         if (!structInterface.isInterface()) {
             throw new IllegalArgumentException(structInterface + " is not an interface");
         }
-        Map<String, ParsedField> fields = new LinkedHashMap<String, ParsedField>();
         for (Method m : structInterface.getDeclaredMethods()) {
-            Field fAnn = m.getAnnotation(Field.class);
-            int length = fAnn == null ? 0 : fAnn.length();
-            int position = fAnn == null ? Integer.MAX_VALUE : fAnn.position();
-            if (isGetter(m) || isArrayGetter(m)) {
-                String propName = m.getName().substring(3);
-                if (fields.containsKey(propName)) {
-                    ParsedField f = fields.get(propName);
-                    fields.put(propName, new ParsedField(f.getType(),
-                            Math.max(length, f.getArrayLength()), propName, position, true, f.hasSetter()));
-                } else {
-                    fields.put(propName, new ParsedField(ParsedFieldType.typeOf(m.getGenericReturnType()), 
-                            length, propName, position, true, false));
-                }
-            } else if (isSetter(m) || isArraySetter(m)) {
-                String propName = m.getName().substring(3);
-                if (fields.containsKey(propName)) {
-                    ParsedField f = fields.get(propName);
-                    fields.put(propName, new ParsedField(f.getType(),
-                            Math.max(length, f.getArrayLength()), propName, f.getPosition(), f.hasSetter(), true));
-                } else {
-                    fields.put(propName, new ParsedField(ParsedFieldType.typeOf(m.getParameterTypes()[m.getParameterTypes().length - 1]), 
-                            length, propName, position, false, true));
-                }
+            if ((m.getModifiers() & Modifier.ABSTRACT) != 0) {
+                addMethod(m);
+            } else if (null != m.getAnnotation(Field.class)) {
+                throw new ParseException("@Field cannot annotate implemented methods: " + m);
             }
         }
-        if (fields.isEmpty()) {
-            throw new IllegalArgumentException("No valid struct fields in " + structInterface);
-        }
-        List<ParsedField> sortedFields = new ArrayList<ParsedField>(fields.values());
-        Collections.sort(sortedFields, new Comparator<ParsedField>() {
-            @Override
-            public int compare(ParsedField o1, ParsedField o2) {
-                return Integer.compare(o1.getPosition(), o2.getPosition());
-            }
-        });
-        return new PStructDesc(structInterface, sortedFields);
     }
 
-    private static boolean isGetter(Method m) {
-        return m.getName().startsWith("get") && m.getParameterTypes().length == 0
-                && m.getReturnType() != Void.TYPE;
-    }
-    
-    private static boolean isArrayGetter(Method m) {
-        return m.getName().startsWith("get") && m.getParameterTypes().length == 1
+    private static final MethodPattern<Method> Getter = new MethodPattern<Method>() {
+        public ParsedField match(Method m) {
+            if (m.getName().startsWith("get") && m.getParameterTypes().length == 0
+                    && m.getReturnType() != Void.TYPE
+                    && m.getReturnType().isPrimitive()) {
+                return ParsedField.newWithGetter(m.getName().substring(3), 
+                        ParsedFieldType.typeOf(m.getReturnType()),
+                        m.getAnnotation(Field.class));
+            } else {
+                return null;
+            }
+        }
+    };
+
+    private static final MethodPattern<Method> ArrayGetter = new MethodPattern<Method>() {
+        public ParsedField match(Method m) {
+            if (m.getName().startsWith("get") && m.getParameterTypes().length == 1
                 && m.getReturnType() != Void.TYPE
-                && m.getParameterTypes()[0] == Integer.TYPE;
-    }
+                && m.getReturnType().isPrimitive()
+                && m.getParameterTypes()[0] == Integer.TYPE) {
+                return ParsedField.newWithGetter(m.getName().substring(3), 
+                        ParsedFieldType.typeOf(m.getReturnType()),
+                        m.getAnnotation(Field.class));
+            } else {
+                return null;
+            }
+        }
+    };
 
-    private static boolean isSetter(Method m) {
-        return m.getName().startsWith("set") 
-            && m.getParameterTypes().length == 1
-            && m.getReturnType() == Void.TYPE;
-    }
-    
-    private static boolean isArraySetter(Method m) {
-        return m.getName().startsWith("set") 
-            && m.getParameterTypes().length == 2
-            && m.getParameterTypes()[0] == Integer.TYPE
-            && m.getReturnType() == Void.TYPE;
-    }
+    private static final MethodPattern<Method> StructGetter = new MethodPattern<Method>() {
+        public ParsedField match(Method m) {
+            if (m.getName().startsWith("get") && m.getParameterTypes().length == 0
+                    && m.getReturnType().equals(StructPointer.class)) {
+                return ParsedField.newWithGetter(m.getName().substring(3), 
+                        ParsedFieldType.typeOf(((ParameterizedType)m.getGenericReturnType()).getActualTypeArguments()[0]),
+                        m.getAnnotation(Field.class));
+            } else {
+                return null;
+            }
+        }
+    };
+
+    private static final MethodPattern<Method> StructArrayGetter = new MethodPattern<Method>() {
+        public ParsedField match(Method m) {
+            if (m.getName().startsWith("get") && m.getParameterTypes().length == 1
+                    && m.getReturnType().equals(StructPointer.class)
+                    && m.getParameterTypes()[0] == Integer.TYPE) {
+                return ParsedField.newWithGetter(m.getName().substring(3), 
+                        ParsedFieldType.typeOf(((ParameterizedType)m.getGenericReturnType()).getActualTypeArguments()[0]),
+                        m.getAnnotation(Field.class));
+            } else {
+                return null;
+            }
+        }
+    };
+
+    private static final MethodPattern<Method> Setter = new MethodPattern<Method>() {
+        public ParsedField match(Method m) {
+            if (m.getName().startsWith("set")
+                    && m.getParameterTypes().length == 1
+                    && m.getParameterTypes()[0].isPrimitive()
+                    && m.getReturnType() == Void.TYPE) {
+                return ParsedField.newWithSetter(m.getName().substring(3), 
+                        ParsedFieldType.typeOf(m.getParameterTypes()[0]),
+                        m.getAnnotation(Field.class));
+            } else {
+                return null;
+            }
+        }
+    };
+
+    private static final MethodPattern<Method> ArraySetter = new MethodPattern<Method>() {
+        public ParsedField match(Method m) {
+            if (m.getName().startsWith("set")
+                    && m.getParameterTypes().length == 2
+                    && m.getParameterTypes()[0] == Integer.TYPE
+                    && m.getParameterTypes()[1].isPrimitive()
+                    && m.getReturnType() == Void.TYPE) {
+                return ParsedField.newWithSetter(m.getName().substring(3), 
+                        ParsedFieldType.typeOf(m.getParameterTypes()[1]),
+                        m.getAnnotation(Field.class));
+            } else {
+                return null;
+            }
+        }
+    };
+
+    private static final List<MethodPattern<Method>> PATTERNS =
+            Arrays.asList(Getter, Setter, ArrayGetter, ArraySetter, StructGetter, StructArrayGetter);
+
 }

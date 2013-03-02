@@ -1,7 +1,7 @@
 package it.fb.structs.bytebuffer;
 
-import it.fb.structs.internal.ParsedField;
-import it.fb.structs.internal.ParsedField.ParsedFieldVisitor;
+import it.fb.structs.apt.ParsedField;
+import it.fb.structs.apt.ParsedFieldVisitor;
 
 /**
  *
@@ -66,7 +66,7 @@ public abstract class OffsetVisitor implements ParsedFieldVisitor<Integer, Void>
 
     @Override
     public Integer visitStruct(ParsedField field, Void p) {
-        return addSize(getStructSize(field.getType().getClassName()), field.getArrayLength());
+        return addSize(getStructSize(field.getType().getTypeName()), field.getArrayLength());
     }
 
     public int getSize() {
