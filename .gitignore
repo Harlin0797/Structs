@@ -166,7 +166,5 @@ pip-log.txt
 # NETBEANS
 ##############
 
-build/
-dist/
-nbproject/private/
-/target/
+/api/target/
+/core/target/
