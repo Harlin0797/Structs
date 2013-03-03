@@ -4,7 +4,7 @@ import it.fb.structs.StructPointer;
 import static it.fb.structs.Structs.*;
 import it.fb.structs.core.PStructDesc;
 import it.fb.structs.core.ParsedField;
-import it.fb.structs.internal.Parser;
+import it.fb.structs.core.Parser;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;

@@ -1,14 +1,12 @@
 package it.fb.structs.asm;
 
-import it.fb.structs.IStructArrayFactory;
 import it.fb.structs.StructArray;
-import it.fb.structs.StructData;
 import it.fb.structs.StructPointer;
 import it.fb.structs.core.PStructDesc;
 import it.fb.structs.core.ParsedField;
 import it.fb.structs.core.ParsedFieldVisitor;
 import it.fb.structs.bytebuffer.OffsetVisitor;
-import it.fb.structs.impl.AbstractStructArrayFactory;
+import it.fb.structs.core.AbstractStructArrayFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;

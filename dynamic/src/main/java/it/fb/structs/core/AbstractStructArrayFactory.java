@@ -1,12 +1,9 @@
-package it.fb.structs.impl;
+package it.fb.structs.core;
 
-import it.fb.structs.IStructArrayFactory;
 import it.fb.structs.StructArray;
-import it.fb.structs.StructData;
-import it.fb.structs.core.PStructDesc;
-import it.fb.structs.core.ParsedField;
+import it.fb.structs.asm.IStructArrayFactory;
+import it.fb.structs.asm.StructData;
 import it.fb.structs.bytebuffer.OffsetVisitor;
-import it.fb.structs.internal.Parser;
 import java.util.HashMap;
 import java.util.Map;
 

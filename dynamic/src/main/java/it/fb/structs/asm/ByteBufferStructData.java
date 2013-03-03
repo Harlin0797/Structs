@@ -1,4 +1,4 @@
-package it.fb.structs;
+package it.fb.structs.asm;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

@@ -1,5 +1,8 @@
-package it.fb.structs;
+package it.fb.structs.test;
 
+import it.fb.structs.StructArray;
+import it.fb.structs.StructPointer;
+import it.fb.structs.Structs;
 import static org.junit.Assert.*;
 import org.junit.Test;
 

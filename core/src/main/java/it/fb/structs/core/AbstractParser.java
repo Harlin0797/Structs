@@ -1,6 +1,5 @@
 package it.fb.structs.core;
 
-import it.fb.structs.core.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;

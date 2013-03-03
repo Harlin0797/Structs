@@ -1,14 +1,12 @@
 package it.fb.structs.asm;
 
-import it.fb.structs.ArrayStruct;
-import it.fb.structs.BasicStruct;
-import it.fb.structs.ByteBufferStructData;
-import it.fb.structs.ComplexStruct;
-import it.fb.structs.IStructArrayFactory;
-import it.fb.structs.MediumStruct;
-import it.fb.structs.SimpleStruct;
 import it.fb.structs.StructArray;
 import it.fb.structs.StructPointer;
+import it.fb.structs.test.ArrayStruct;
+import it.fb.structs.test.BasicStruct;
+import it.fb.structs.test.ComplexStruct;
+import it.fb.structs.test.MediumStruct;
+import it.fb.structs.test.SimpleStruct;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;

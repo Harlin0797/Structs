@@ -1,4 +1,8 @@
-package it.fb.structs;
+package it.fb.structs.test;
+
+import it.fb.structs.Field;
+import it.fb.structs.Struct;
+import it.fb.structs.StructPointer;
 
 /**
  *

@@ -1,27 +1,37 @@
 package it.fb.structs.asm;
 
-import com.google.caliper.Param;
-import com.google.caliper.Runner;
-import com.google.caliper.SimpleBenchmark;
-import it.fb.structs.ByteBufferStructData;
-import it.fb.structs.IStructArrayFactory;
-import it.fb.structs.SimpleStruct;
+import it.fb.structs.Field;
 import it.fb.structs.StructArray;
-import it.fb.structs.StructData;
 import it.fb.structs.StructPointer;
-import it.fb.structs.UnsafeStructData;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import sun.misc.Unsafe;
 
+// Eseguire con
+// -XX:+UnlockDiagnosticVMOptions -XX:PrintAssemblyOptions=intel -XX:CompileCommand=print,*DummyWrapper*.getI 
+
 /**
  *
  * @author Flavio
  */
-public class ByteBufferAsmSAFBenchmark extends SimpleBenchmark {
-    
+public class MyBench {
+
+    public interface SimpleStruct {
+        @Field(position=0)
+        int getI();
+        void setI(int value);
+
+        @Field(position=1)
+        long getL();
+        void setL(long value);
+
+        @Field(length=32, position=2)
+        byte getB(int index);
+        void setB(int index, byte value);
+    }
+
     public enum FactoryEnum {
         
         PlainNative(ByteBufferStructData.Plain.Native),
@@ -42,7 +52,7 @@ public class ByteBufferAsmSAFBenchmark extends SimpleBenchmark {
         WrapUnsafe(null) {
             @Override
             public StructPointer<SimpleStruct> getPtr() {
-                return new DummyWrapper(UnsafeStructData.Factory.newBuffer(128));
+                return new UnsafeWrapper(UnsafeStructData.Factory.newBuffer(128));
             }
         },
         WrapDirectByteBuffer(null) {
@@ -68,7 +78,6 @@ public class ByteBufferAsmSAFBenchmark extends SimpleBenchmark {
         }
     }
 
-    @Param
     private FactoryEnum factoryEnum;
 
     public int timeGetSimpleInt(int reps) {
@@ -82,7 +91,15 @@ public class ByteBufferAsmSAFBenchmark extends SimpleBenchmark {
     }
 
     public static void main(String[] args) {
-        Runner.main(ByteBufferAsmSAFBenchmark.class, args);
+        for (FactoryEnum ev : FactoryEnum.values()) {
+            MyBench bench = new MyBench();
+            bench.factoryEnum = ev;
+            bench.timeGetSimpleInt(100000000);
+            long start = System.nanoTime();
+            int v = bench.timeGetSimpleInt(100000000);
+            long end = System.nanoTime();
+            System.out.printf("%s: %f [%d]\n", ev, (end-start) / 100000000.0, v);
+        }
     }
     
     private static class ClassDumpImpl implements IClassDump {
@@ -346,6 +363,112 @@ public class ByteBufferAsmSAFBenchmark extends SimpleBenchmark {
         private final StructData structData;
 
         public DummyWrapper(StructData structData) {
+            this.structData = structData;
+        }
+
+        public SimpleStruct get() {
+            return this;
+        }
+
+        public int getI() {
+            return structData.getInt(32);
+        }
+
+        public void setI(int value) {
+            structData.putInt(32, value);
+        }
+
+        public byte getB() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void setB(byte value) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public char getC() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void setC(char value) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public short getS() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void setS(short value) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public long getL() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void setL(long value) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public float getF() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void setF(float value) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public double getD() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void setD(double value) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public StructPointer<SimpleStruct> at(int index) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public StructArray<SimpleStruct> getOwner() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public int length() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public int structSize() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public SimpleStruct pin() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public StructPointer<SimpleStruct> duplicate() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public int index() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public byte getB(int index) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void setB(int index, byte value) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+    }
+    
+    private static final class UnsafeWrapper implements SimpleStruct, StructPointer<SimpleStruct> {
+        
+        private final UnsafeStructData structData;
+
+        public UnsafeWrapper(UnsafeStructData structData) {
             this.structData = structData;
         }
 

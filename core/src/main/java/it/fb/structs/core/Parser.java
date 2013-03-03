@@ -1,12 +1,7 @@
-package it.fb.structs.internal;
+package it.fb.structs.core;
 
 import it.fb.structs.Field;
 import it.fb.structs.StructPointer;
-import it.fb.structs.core.AbstractParser;
-import it.fb.structs.core.PStructDesc;
-import it.fb.structs.core.ParseException;
-import it.fb.structs.core.ParsedField;
-import it.fb.structs.core.ParsedFieldType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;

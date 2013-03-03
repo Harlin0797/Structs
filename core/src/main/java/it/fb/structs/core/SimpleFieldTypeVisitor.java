@@ -1,7 +1,5 @@
 package it.fb.structs.core;
 
-import it.fb.structs.core.PFieldTypeVisitor;
-
 /**
  *
  * @author Flavio
