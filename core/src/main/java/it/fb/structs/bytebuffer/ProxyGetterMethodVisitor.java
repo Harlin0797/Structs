@@ -1,7 +1,7 @@
 package it.fb.structs.bytebuffer;
 
-import it.fb.structs.apt.ParsedField;
-import it.fb.structs.apt.ParsedFieldVisitor;
+import it.fb.structs.core.ParsedField;
+import it.fb.structs.core.ParsedFieldVisitor;
 import it.fb.structs.bytebuffer.ByteBufferProxyHandlerFactory.SABBDataInvocationHandler;
 import java.lang.reflect.Proxy;
 import java.nio.ByteBuffer;

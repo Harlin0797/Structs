@@ -1,5 +1,6 @@
 package it.fb.structs.apt;
 
+import it.fb.structs.core.PStructDesc;
 import it.fb.structs.Field;
 import static it.fb.structs.apt.Model.*;
 import javax.lang.model.element.TypeElement;

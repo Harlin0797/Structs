@@ -1,14 +1,13 @@
 package it.fb.structs.apt;
 
-import it.fb.structs.ArrayStruct;
-import it.fb.structs.BasicStruct;
-import it.fb.structs.ComplexStruct;
-import it.fb.structs.MediumStruct;
-import it.fb.structs.SimpleStruct;
 import it.fb.structs.StructPointer;
+import it.fb.structs.test.ArrayStruct;
+import it.fb.structs.test.BasicStruct;
+import it.fb.structs.test.ComplexStruct;
+import it.fb.structs.test.MediumStruct;
+import it.fb.structs.test.SimpleStruct;
 import java.io.IOException;
 import static org.junit.Assert.*;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

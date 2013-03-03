@@ -1,4 +1,4 @@
-package it.fb.structs.apt.pattern;
+package it.fb.structs.core;
 
 /**
  *

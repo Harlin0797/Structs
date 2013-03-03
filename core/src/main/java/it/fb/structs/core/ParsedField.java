@@ -1,7 +1,6 @@
-package it.fb.structs.apt;
+package it.fb.structs.core;
 
 import it.fb.structs.Field;
-import it.fb.structs.apt.pattern.ParseException;
 import java.lang.reflect.Method;
 import java.util.Comparator;
 

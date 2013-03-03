@@ -1,4 +1,4 @@
-package it.fb.structs.apt;
+package it.fb.structs.core;
 
 import java.util.ArrayList;
 import java.util.HashSet;
