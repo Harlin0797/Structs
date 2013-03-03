@@ -2,6 +2,7 @@ package it.fb.structs.apt;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -15,7 +16,7 @@ public class Tarjan<N> {
     private final Dependents<N> dependents;
     private final List<N> result = new ArrayList<N>();
     private final Set<N> permMarks = new HashSet<N>();
-    private final Set<N> tempMarks = new HashSet<N>();
+    private final Set<N> tempMarks = new LinkedHashSet<N>();
 
     private Tarjan(Iterable<N> nodes, Dependents<N> dependents) {
         this.nodes = nodes;
@@ -32,7 +33,7 @@ public class Tarjan<N> {
     
     private void visit(N node) {
         if (tempMarks.contains(node)) {
-            throw new IllegalStateException("Graph has a cycle containing node " + node);
+            throw new IllegalStateException("Dependency cycle detected: " + tempMarks.toString());
         }
         if (!permMarks.contains(node)) {
             tempMarks.add(node);
