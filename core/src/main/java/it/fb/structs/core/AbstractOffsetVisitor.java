@@ -1,18 +1,15 @@
-package it.fb.structs.bytebuffer;
-
-import it.fb.structs.core.ParsedField;
-import it.fb.structs.core.ParsedFieldVisitor;
+package it.fb.structs.core;
 
 /**
  *
  * @author Flavio
  */
-public abstract class OffsetVisitor implements ParsedFieldVisitor<Integer, Void> {
+public abstract class AbstractOffsetVisitor implements ParsedFieldVisitor<Integer, Void> {
 
     protected final int alignment;
     private int size = 0;
 
-    public OffsetVisitor(int alignment) {
+    public AbstractOffsetVisitor(int alignment) {
         this.alignment = alignment;
     }
     

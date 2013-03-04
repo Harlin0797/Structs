@@ -3,7 +3,7 @@ package it.fb.structs.proxy;
 import it.fb.structs.StructArray;
 import it.fb.structs.StructPointer;
 import it.fb.structs.asm.StructData;
-import it.fb.structs.bytebuffer.OffsetVisitor;
+import it.fb.structs.core.AbstractOffsetVisitor;
 import it.fb.structs.core.PFieldTypeVisitor;
 import it.fb.structs.core.PStructDesc;
 import it.fb.structs.core.ParsedField;
@@ -40,7 +40,7 @@ class InvocationHandlerFactory<T, D extends StructData> {
     }
     
     public static <T, D extends StructData> InvocationHandlerFactory<T, D> create(
-            Class<T> structInterface, PStructDesc structDesc, OffsetVisitor offsetVisitor) {
+            Class<T> structInterface, PStructDesc structDesc, AbstractOffsetVisitor offsetVisitor) {
         Map<Method, MethodInvocationHandler<D>> methodHandlers = new HashMap<Method, MethodInvocationHandler<D>>();
         for (ParsedField field : structDesc.getFields()) {
             Integer fieldOffset = field.accept(offsetVisitor, null);
@@ -134,11 +134,11 @@ class InvocationHandlerFactory<T, D extends StructData> {
         }
 
         public T pin() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("TODO");
         }
 
         public StructPointer<T> duplicate() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("TODO");
         }
 
         public int index() {

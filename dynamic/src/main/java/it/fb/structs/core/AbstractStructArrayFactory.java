@@ -3,7 +3,6 @@ package it.fb.structs.core;
 import it.fb.structs.StructArray;
 import it.fb.structs.asm.IStructArrayFactory;
 import it.fb.structs.asm.StructData;
-import it.fb.structs.bytebuffer.OffsetVisitor;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,7 +58,7 @@ public abstract class AbstractStructArrayFactory<D extends StructData> implement
         public abstract StructArray<T> wrap(D data) ;
     }
 
-    protected class LocalOffsetVisitor extends OffsetVisitor {
+    protected class LocalOffsetVisitor extends AbstractOffsetVisitor {
 
         public LocalOffsetVisitor(int alignment) {
             super(alignment);

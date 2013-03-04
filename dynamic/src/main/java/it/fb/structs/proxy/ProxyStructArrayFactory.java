@@ -5,7 +5,7 @@ import it.fb.structs.StructPointer;
 import it.fb.structs.asm.IStructArrayFactory;
 import it.fb.structs.asm.StructData;
 import it.fb.structs.asm.StructData.Factory;
-import it.fb.structs.bytebuffer.OffsetVisitor;
+import it.fb.structs.core.OffsetVisitor;
 import it.fb.structs.core.AbstractStructArrayFactory;
 import it.fb.structs.core.PStructDesc;
 import java.lang.reflect.Constructor;

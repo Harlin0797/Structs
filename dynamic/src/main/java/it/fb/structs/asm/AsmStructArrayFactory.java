@@ -5,7 +5,7 @@ import it.fb.structs.StructPointer;
 import it.fb.structs.core.PStructDesc;
 import it.fb.structs.core.ParsedField;
 import it.fb.structs.core.ParsedFieldVisitor;
-import it.fb.structs.bytebuffer.OffsetVisitor;
+import it.fb.structs.core.AbstractOffsetVisitor;
 import it.fb.structs.core.AbstractStructArrayFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -40,7 +40,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                 Type.getInternalName(Object.class),
                 new String[] { Type.getInternalName(structInterface), Type.getInternalName(StructPointer.class) });
         Builder<T> builder = new Builder<T>(dataFactory, structInterface, cw, internalName);
-        OffsetVisitor ov = new LocalOffsetVisitor(4);
+        AbstractOffsetVisitor ov = new LocalOffsetVisitor(4);
 
         for (ParsedField field : desc.getFields()) {
             int fieldOffset = field.accept(ov, null);
