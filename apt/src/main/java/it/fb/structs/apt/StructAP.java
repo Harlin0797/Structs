@@ -178,8 +178,9 @@ public class StructAP extends AbstractProcessor {
             String implName = intfName + "Impl";
             intfClass = cm.ref(intfName);
             implClass = cm._class(JMod.PUBLIC, implName, ClassType.CLASS);
-            implClass._extends(cm.ref(AbstractPointer.class).narrow(intfClass));
-            implClass._implements(intfClass);            
+            implClass._implements(cm.ref(StructPointer.class).narrow(intfClass));
+            implClass._implements(intfClass);
+            generateUnsafe();
             generateVariables();
             generateConstructor();
             generateGet();
@@ -340,6 +341,20 @@ public class StructAP extends AbstractProcessor {
         }
 
         //<editor-fold defaultstate="collapsed" desc="Generazione metodi accessori">
+        
+        private void generateUnsafe() {
+            implClass.direct(
+                    "    protected final static sun.misc.Unsafe TheUnsafe; \n" +
+                    "    static {\n" +
+                    "        try {\n" +
+                    "            java.lang.reflect.Field field = sun.misc.Unsafe.class.getDeclaredField(\"theUnsafe\");\n" +
+                    "            field.setAccessible(true);\n" +
+                    "            TheUnsafe = (sun.misc.Unsafe) field.get(null);\n" +
+                    "        } catch (Exception e) {\n" +
+                    "            throw new ExceptionInInitializerError(e);\n" +
+                    "        }\n" +
+                    "    }\n");
+        }
         
         private void generateVariables() {
             size = implClass.field(JMod.PUBLIC + JMod.STATIC + JMod.FINAL, cm.INT, "SIZE");
