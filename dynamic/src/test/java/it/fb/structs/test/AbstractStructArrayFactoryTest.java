@@ -1,12 +1,8 @@
-package it.fb.structs.asm;
+package it.fb.structs.test;
 
+import it.fb.structs.asm.*;
 import it.fb.structs.StructArray;
 import it.fb.structs.StructPointer;
-import it.fb.structs.test.ArrayStruct;
-import it.fb.structs.test.BasicStruct;
-import it.fb.structs.test.ComplexStruct;
-import it.fb.structs.test.MediumStruct;
-import it.fb.structs.test.SimpleStruct;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,15 +11,12 @@ import org.junit.Test;
  *
  * @author Flavio
  */
-public class ByteBufferAsmSAFTest {
+public abstract class AbstractStructArrayFactoryTest {
     
-    private IStructArrayFactory<?> factory;
+    protected IStructArrayFactory<?> factory;
     
     @Before
-    public void setUp() {
-        factory = AsmStructArrayFactory.newInstance(ByteBufferStructData.Plain.Native);
-        //factory = AsmStructArrayFactory.newInstance(UnsafeStructData.Factory);
-    }
+    public abstract void setUp();
     
     @Test
     public void testMediumSizes() {
