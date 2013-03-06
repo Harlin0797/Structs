@@ -14,6 +14,7 @@ import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  *
@@ -21,18 +22,35 @@ import java.util.Map;
  */
 class InvocationHandlerFactory<T, D extends StructData> {
     
+    private final ProxyStructArrayFactory<D> owner;
     private final Class<T> structInterface;
     private final int structSize;
     private final Map<Method, MethodInvocationHandler<D>> methodHandlers;
+    private final Map<Method, ChildPointerFactoryData> childPointers;
 
-    public InvocationHandlerFactory(Class<T> structInterface, int structSize, Map<Method, MethodInvocationHandler<D>> methodHandlers) {
+    public InvocationHandlerFactory(ProxyStructArrayFactory<D> owner, Class<T> structInterface, int structSize, Map<Method, MethodInvocationHandler<D>> methodHandlers,
+            Map<Method, ChildPointerFactoryData> childPointers) {
+        this.owner = owner;
         this.structInterface = structInterface;
         this.structSize = structSize;
         this.methodHandlers = methodHandlers;
+        this.childPointers = childPointers;
     }
 
     public InvocationHandler newInvocationHandler(D data, int length, int index) {
-        return new InvocationHandlerImpl(data, structSize, length, index, Collections.EMPTY_MAP); // TODO: Child pointers
+        Map<Method, ChildPointerData> childInstanceData;
+        if (childPointers.isEmpty()) {
+            childInstanceData = Collections.<Method, ChildPointerData>emptyMap();
+        } else {
+            childInstanceData = new HashMap<Method, ChildPointerData>(childPointers.size());
+            for (Entry<Method, ChildPointerFactoryData> child : childPointers.entrySet()) {
+                StructPointer<?> childPointer = owner.newPointer(child.getValue().childType, data, child.getValue().length, 0);
+                childInstanceData.put(child.getKey(), new ChildPointerData(child.getValue().offset, childPointer));
+            }
+        }
+        InvocationHandlerImpl ret = new InvocationHandlerImpl(data, length, childInstanceData);
+        ret.at(index);
+        return ret;
     }
 
     public int getStructSize() {
@@ -40,10 +58,11 @@ class InvocationHandlerFactory<T, D extends StructData> {
     }
     
     public static <T, D extends StructData> InvocationHandlerFactory<T, D> create(
-            Class<T> structInterface, PStructDesc structDesc, AbstractOffsetVisitor offsetVisitor) {
+            ProxyStructArrayFactory<D> owner, Class<T> structInterface, PStructDesc structDesc, AbstractOffsetVisitor offsetVisitor) {
         Map<Method, MethodInvocationHandler<D>> methodHandlers = new HashMap<Method, MethodInvocationHandler<D>>();
+        Map<Method, ChildPointerFactoryData> childPointers = new HashMap<Method, ChildPointerFactoryData>();
         for (ParsedField field : structDesc.getFields()) {
-            Integer fieldOffset = field.accept(offsetVisitor, null);
+            int fieldOffset = field.accept(offsetVisitor, null);
             if (field.getType().isPrimitive()) {
                 Method getter = field.findGetterOn(structInterface);
                 Method setter = field.findSetterOn(structInterface);
@@ -54,28 +73,30 @@ class InvocationHandlerFactory<T, D extends StructData> {
                     InvocationHandlerFactory.<D>newArraySetterHandler(field.getType(), fieldOffset) : 
                     InvocationHandlerFactory.<D>newSetterHandler(field.getType(), fieldOffset));
             } else {
-                // TODO: Struct fields
+                Method getter = field.findGetterOn(structInterface);
+                try {
+                    childPointers.put(getter, new ChildPointerFactoryData(fieldOffset,
+                            field.getArrayLength() == 0 ? 1 : field.getArrayLength(), Class.forName(field.getType().getTypeName())));
+                } catch (ClassNotFoundException ex) {
+                    throw new IllegalStateException(ex);
+                }
             }
         }
-        return new InvocationHandlerFactory<T, D>(structInterface, offsetVisitor.getSize(), methodHandlers);
+        return new InvocationHandlerFactory<T, D>(owner, structInterface, offsetVisitor.getSize(), methodHandlers, childPointers);
     }
 
     private class InvocationHandlerImpl implements InvocationHandler, StructPointer<T> {
-        
+
         private final D data;
-        private final int structSize;
         private final int length;
-        private final Map<Method, StructPointer<?>> subPointers;
+        private final Map<Method, ChildPointerData> subPointers;
         private int baseOffset;
         private int curAddress;
 
-        public InvocationHandlerImpl(D data, int structSize, int length, int index,
-                Map<Method, StructPointer<?>> subPointers) {
+        public InvocationHandlerImpl(D data, int length, Map<Method, ChildPointerData> subPointers) {
             this.data = data;
-            this.structSize = structSize;
             this.length = length;
             this.subPointers = subPointers;
-            at(index);
         }
 
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -87,9 +108,9 @@ class InvocationHandlerFactory<T, D extends StructData> {
                     return ret;
                 }
             } else {
-                StructPointer<?> subPointer = subPointers.get(method);
+                ChildPointerData subPointer = subPointers.get(method);
                 if (subPointer != null) {
-                    return subPointer;
+                    return subPointer.pointer;
                 } else {
                     return invokeData(method, args);
                 }
@@ -114,9 +135,9 @@ class InvocationHandlerFactory<T, D extends StructData> {
 
         public final StructPointer<T> at(int index) {
             int _curAddress = this.curAddress = index * structSize + baseOffset;
-            for (StructPointer<?> subPointer : subPointers.values()) {
-                InvocationHandlerImpl invocationHandler = (InvocationHandlerImpl) Proxy.getInvocationHandler(subPointer);
-                invocationHandler.baseOffset = _curAddress + 0; // TODO: POINTER FIELD OFFSET
+            for (ChildPointerData subPointer : subPointers.values()) {
+                InvocationHandlerImpl invocationHandler = (InvocationHandlerImpl) Proxy.getInvocationHandler(subPointer.pointer);
+                invocationHandler.setBaseOffset(_curAddress + subPointer.offset);
             }
             return null;
         }
@@ -134,15 +155,45 @@ class InvocationHandlerFactory<T, D extends StructData> {
         }
 
         public T pin() {
-            throw new UnsupportedOperationException("TODO");
+            return (T) duplicate();
         }
 
         public StructPointer<T> duplicate() {
-            throw new UnsupportedOperationException("TODO");
+            StructPointer<T> ret = owner.newPointer(structInterface, data, length, index());
+            InvocationHandlerImpl invocationHandler = (InvocationHandlerImpl) Proxy.getInvocationHandler(ret);
+            invocationHandler.setBaseOffset(baseOffset);
+            return ret;
         }
 
         public int index() {
             return (curAddress - baseOffset) / structSize;
+        }
+
+        private void setBaseOffset(int baseOffset) {
+            this.baseOffset = baseOffset;
+            at(0);
+        }
+    }
+
+    private static final class ChildPointerData {
+        public final int offset;
+        public final StructPointer<?> pointer;
+
+        public ChildPointerData(int offset, StructPointer<?> pointer) {
+            this.offset = offset;
+            this.pointer = pointer;
+        }
+    }
+
+    private static final class ChildPointerFactoryData {
+        public final int offset;
+        public final int length;
+        public final Class<?> childType;
+
+        public ChildPointerFactoryData(int offset, int length, Class<?> childType) {
+            this.offset = offset;
+            this.length = length;
+            this.childType = childType;
         }
     }
 
@@ -150,6 +201,7 @@ class InvocationHandlerFactory<T, D extends StructData> {
         public Object invoke(D data, int offset, Object[] args);
     }
 
+    //<editor-fold defaultstate="collapsed" desc="Method invocation handler builders">
     private static <D extends StructData> MethodInvocationHandler<D> newGetterHandler(ParsedFieldType type, final int fieldOffset) {
         return type.accept(new PFieldTypeVisitor<MethodInvocationHandler<D>, Void>() {
             public MethodInvocationHandler<D> visitBoolean(Void p) {
@@ -213,7 +265,7 @@ class InvocationHandlerFactory<T, D extends StructData> {
             }
 
             public MethodInvocationHandler<D> visitStruct(String typeName, Void p) {
-                throw new UnsupportedOperationException("Not supported yet.");
+                throw new UnsupportedOperationException();
             }
         }, null);
     }
@@ -281,7 +333,7 @@ class InvocationHandlerFactory<T, D extends StructData> {
             }
 
             public MethodInvocationHandler<D> visitStruct(String typeName, Void p) {
-                throw new UnsupportedOperationException("Not supported yet.");
+                throw new UnsupportedOperationException();
             }
         }, null);
     }
@@ -356,7 +408,7 @@ class InvocationHandlerFactory<T, D extends StructData> {
             }
 
             public MethodInvocationHandler<D> visitStruct(String typeName, Void p) {
-                throw new UnsupportedOperationException("Not supported yet.");
+                throw new UnsupportedOperationException();
             }
         }, null);
     }
@@ -431,9 +483,9 @@ class InvocationHandlerFactory<T, D extends StructData> {
             }
 
             public MethodInvocationHandler<D> visitStruct(String typeName, Void p) {
-                throw new UnsupportedOperationException("Not supported yet.");
+                throw new UnsupportedOperationException();
             }
         }, null);
     }
-
+    //</editor-fold>
 }
