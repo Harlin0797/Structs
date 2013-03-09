@@ -34,13 +34,22 @@ public interface StructPointer<T> {
     int structSize();
 
     /**
-     * Copies the data pointer by the <i>source</i> pointer into the
+     * Copies the data pointed by the <i>source</i> pointer into the
      * data pointer by the receiver.
      * @param source Pointer pointing to the data to be copied
      * @return The receiver
      */
     //public StructPointer<T> copy(StructPointer<T> source);
-    
+
+    /**
+     * Copies an array of data pointed by the <i>source</i> pointer into
+     * an array of data pointer by the receiver.
+     * @param source Pointer pointing to the data to be copied
+     * @param length The number of contiguous elements to be copied
+     * @return The receiver
+     */
+    //public StructPointer<T> copy(StructPointer<T> source, int length);
+
     /**
      * Creates a <b>new</b> instance of <code>T</code>, fixed on the
      * data currently pointed by the receiver.
@@ -55,7 +64,7 @@ public interface StructPointer<T> {
      * @return A new pointer to the same item as the original
      */
     public StructPointer<T> duplicate();
-    
+
     /**
      * Returns the index of the array the receiver is currently pointing to.
      * @return The index the receiver is pointing to; between 0 (included) and length(excluded).
