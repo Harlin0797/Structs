@@ -7,11 +7,11 @@ import java.nio.ByteOrder;
  *
  * @author Flavio
  */
-public final class ByteBufferStructData implements StructData {
+public final class ByteBufferStorage implements StructData {
     
     private final ByteBuffer buffer;
 
-    private ByteBufferStructData(ByteBuffer buffer) {
+    private ByteBufferStorage(ByteBuffer buffer) {
         this.buffer = buffer;
     }
 
@@ -94,12 +94,12 @@ public final class ByteBufferStructData implements StructData {
     public void release() {
     }
 
-    public static class Plain implements DataStorage<ByteBufferStructData> {
-        public static final DataStorage<ByteBufferStructData> Native 
+    public static class Plain implements DataStorage<ByteBufferStorage> {
+        public static final DataStorage<ByteBufferStorage> Native 
                 = new Plain(ByteOrder.nativeOrder());
-        public static final DataStorage<ByteBufferStructData> BigEndian 
+        public static final DataStorage<ByteBufferStorage> BigEndian 
                 = new Plain(ByteOrder.BIG_ENDIAN);
-        public static final DataStorage<ByteBufferStructData> LittleEndian
+        public static final DataStorage<ByteBufferStorage> LittleEndian
                 = new Plain(ByteOrder.LITTLE_ENDIAN);
 
         private final ByteOrder order;
@@ -109,22 +109,22 @@ public final class ByteBufferStructData implements StructData {
         }
 
         @Override
-        public Class<ByteBufferStructData> getBufferClass() {
-            return ByteBufferStructData.class;
+        public Class<ByteBufferStorage> getBufferClass() {
+            return ByteBufferStorage.class;
         }
 
         @Override
-        public final ByteBufferStructData newBuffer(int size) {
-            return new ByteBufferStructData(ByteBuffer.allocate(size).order(order));
+        public final ByteBufferStorage newBuffer(int size) {
+            return new ByteBufferStorage(ByteBuffer.allocate(size).order(order));
         }
     }
 
-    public static final class Direct implements DataStorage<ByteBufferStructData> {
-        public static final DataStorage<ByteBufferStructData> Native 
+    public static final class Direct implements DataStorage<ByteBufferStorage> {
+        public static final DataStorage<ByteBufferStorage> Native 
                 = new Direct(ByteOrder.nativeOrder());
-        public static final DataStorage<ByteBufferStructData> BigEndian 
+        public static final DataStorage<ByteBufferStorage> BigEndian 
                 = new Direct(ByteOrder.BIG_ENDIAN);
-        public static final DataStorage<ByteBufferStructData> LittleEndian
+        public static final DataStorage<ByteBufferStorage> LittleEndian
                 = new Direct(ByteOrder.LITTLE_ENDIAN);
 
         private final ByteOrder order;
@@ -134,13 +134,13 @@ public final class ByteBufferStructData implements StructData {
         }
 
         @Override
-        public Class<ByteBufferStructData> getBufferClass() {
-            return ByteBufferStructData.class;
+        public Class<ByteBufferStorage> getBufferClass() {
+            return ByteBufferStorage.class;
         }
 
         @Override
-        public final ByteBufferStructData newBuffer(int size) {
-            return new ByteBufferStructData(ByteBuffer.allocateDirect(size).order(order));
+        public final ByteBufferStorage newBuffer(int size) {
+            return new ByteBufferStorage(ByteBuffer.allocateDirect(size).order(order));
         }
     }
     

@@ -6,13 +6,13 @@ import sun.misc.Unsafe;
  *
  * @author Flavio
  */
-public final class UnsafeStructData implements StructData {
+public final class UnsafeStorage implements StructData {
 
     private final Unsafe unsafe;
     private final long baseAddress;
     private final int size;
 
-    private UnsafeStructData(Unsafe unsafe, long baseAddress, int size) {
+    private UnsafeStorage(Unsafe unsafe, long baseAddress, int size) {
         this.unsafe = unsafe;
         this.baseAddress = baseAddress;
         this.size = size;
@@ -98,7 +98,7 @@ public final class UnsafeStructData implements StructData {
         unsafe.freeMemory(baseAddress);
     }
 
-    public static DataStorage<UnsafeStructData> Factory = new DataStorage<UnsafeStructData>() {
+    public static final DataStorage<UnsafeStorage> Instance = new DataStorage<UnsafeStorage>() {
         
         private final Unsafe TheUnsafe;
         
@@ -113,14 +113,14 @@ public final class UnsafeStructData implements StructData {
         }
 
         @Override
-        public Class<UnsafeStructData> getBufferClass() {
-            return UnsafeStructData.class;
+        public Class<UnsafeStorage> getBufferClass() {
+            return UnsafeStorage.class;
         }
 
         @Override
-        public UnsafeStructData newBuffer(int size) {
+        public UnsafeStorage newBuffer(int size) {
             long baseAddress = TheUnsafe.allocateMemory(size);
-            return new UnsafeStructData(TheUnsafe, baseAddress, size);
+            return new UnsafeStorage(TheUnsafe, baseAddress, size);
         }
     };
 }

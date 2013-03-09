@@ -34,9 +34,9 @@ public class MyBench {
 
     public enum FactoryEnum {
         
-        PlainNative(ByteBufferStructData.Plain.Native),
-        DirectNative(ByteBufferStructData.Direct.Native),
-        Unsafe(UnsafeStructData.Factory),
+        PlainNative(ByteBufferStorage.Plain.Native),
+        DirectNative(ByteBufferStorage.Direct.Native),
+        Unsafe(UnsafeStorage.Instance),
         DummyUnsafe(null) {
             @Override
             public StructPointer<SimpleStruct> getPtr() {
@@ -52,13 +52,13 @@ public class MyBench {
         WrapUnsafe(null) {
             @Override
             public StructPointer<SimpleStruct> getPtr() {
-                return new UnsafeWrapper(UnsafeStructData.Factory.newBuffer(128));
+                return new UnsafeWrapper(UnsafeStorage.Instance.newBuffer(128));
             }
         },
         WrapDirectByteBuffer(null) {
             @Override
             public StructPointer<SimpleStruct> getPtr() {
-                return new DummyWrapper(ByteBufferStructData.Direct.Native.newBuffer(128));
+                return new DummyWrapper(ByteBufferStorage.Direct.Native.newBuffer(128));
             }
         };
 
@@ -454,9 +454,9 @@ public class MyBench {
     
     private static final class UnsafeWrapper implements SimpleStruct, StructPointer<SimpleStruct> {
         
-        private final UnsafeStructData structData;
+        private final UnsafeStorage structData;
 
-        public UnsafeWrapper(UnsafeStructData structData) {
+        public UnsafeWrapper(UnsafeStorage structData) {
             this.structData = structData;
         }
 

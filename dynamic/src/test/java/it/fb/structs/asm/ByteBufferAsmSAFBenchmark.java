@@ -20,9 +20,9 @@ public class ByteBufferAsmSAFBenchmark extends SimpleBenchmark {
     
     public enum FactoryEnum {
         
-        PlainNative(ByteBufferStructData.Plain.Native),
-        DirectNative(ByteBufferStructData.Direct.Native),
-        Unsafe(UnsafeStructData.Factory),
+        PlainNative(ByteBufferStorage.Plain.Native),
+        DirectNative(ByteBufferStorage.Direct.Native),
+        Unsafe(UnsafeStorage.Instance),
         DummyUnsafe(null) {
             @Override
             public StructPointer<SimpleStruct> getPtr() {
@@ -38,13 +38,13 @@ public class ByteBufferAsmSAFBenchmark extends SimpleBenchmark {
         WrapUnsafe(null) {
             @Override
             public StructPointer<SimpleStruct> getPtr() {
-                return new DummyWrapper(UnsafeStructData.Factory.newBuffer(128));
+                return new DummyWrapper(UnsafeStorage.Instance.newBuffer(128));
             }
         },
         WrapDirectByteBuffer(null) {
             @Override
             public StructPointer<SimpleStruct> getPtr() {
-                return new DummyWrapper(ByteBufferStructData.Direct.Native.newBuffer(128));
+                return new DummyWrapper(ByteBufferStorage.Direct.Native.newBuffer(128));
             }
         };
 

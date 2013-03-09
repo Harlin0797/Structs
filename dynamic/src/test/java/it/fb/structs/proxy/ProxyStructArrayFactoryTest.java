@@ -1,7 +1,6 @@
 package it.fb.structs.proxy;
 
 import it.fb.structs.asm.DataStorage;
-import it.fb.structs.asm.StructData;
 import it.fb.structs.test.AbstractStructArrayFactoryTest;
 
 /**

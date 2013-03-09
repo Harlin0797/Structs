@@ -22,22 +22,22 @@ public abstract class AbstractStructArrayFactoryTest {
     @Parameters
     public static Collection<Object[]> data() {
         Object[][] data = {
-            { ByteBufferStructData.Plain.Native },
-            { ByteBufferStructData.Plain.BigEndian },
-            { ByteBufferStructData.Plain.LittleEndian },
-            { ByteBufferStructData.Direct.Native },
-            { ByteBufferStructData.Direct.BigEndian },
-            { ByteBufferStructData.Direct.LittleEndian },
-            { UnsafeStructData.Factory }
+            { ByteBufferStorage.Plain.Native },
+            { ByteBufferStorage.Plain.BigEndian },
+            { ByteBufferStorage.Plain.LittleEndian },
+            { ByteBufferStorage.Direct.Native },
+            { ByteBufferStorage.Direct.BigEndian },
+            { ByteBufferStorage.Direct.LittleEndian },
+            { UnsafeStorage.Instance }
         };
         return Arrays.asList(data);
     }    
 
-    protected final Allocator<?> factory;
+    protected final Allocator<?> allocator;
     private MasterStructPointer<?> master;
 
-    public AbstractStructArrayFactoryTest(Allocator<?> factory) {
-        this.factory = factory;
+    public AbstractStructArrayFactoryTest(Allocator<?> allocator) {
+        this.allocator = allocator;
     }
 
     @After
@@ -46,7 +46,7 @@ public abstract class AbstractStructArrayFactoryTest {
     }
 
     private <T> MasterStructPointer<T> newStructArray(Class<T> claxx, int len) {
-        MasterStructPointer<T> ret = factory.newStructArray(claxx, len);
+        MasterStructPointer<T> ret = allocator.newStructArray(claxx, len);
         master = ret;
         return ret;
     }
