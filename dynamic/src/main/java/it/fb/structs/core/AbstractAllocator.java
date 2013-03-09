@@ -1,7 +1,8 @@
 package it.fb.structs.core;
 
 import it.fb.structs.MasterStructPointer;
-import it.fb.structs.asm.IStructArrayFactory;
+import it.fb.structs.asm.DataStorage;
+import it.fb.structs.asm.Allocator;
 import it.fb.structs.asm.StructData;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,15 +11,15 @@ import java.util.Map;
  *
  * @author Flavio
  */
-public abstract class AbstractStructArrayFactory<D extends StructData> implements IStructArrayFactory<D> {
+public abstract class AbstractAllocator<D extends StructData> implements Allocator<D> {
 
-    protected final StructData.Factory<D> dataFactory;
+    protected final DataStorage<D> dataFactory;
     private final Map<Class<?>, PStructDesc> structDescriptors =
             new HashMap<Class<?>, PStructDesc>();
     private final Map<Class<?>, AbstractStructArrayClassFactory<?>> classCache = 
             new HashMap<Class<?>, AbstractStructArrayClassFactory<?>>();
 
-    public AbstractStructArrayFactory(StructData.Factory<D> dataFactory) {
+    public AbstractAllocator(DataStorage<D> dataFactory) {
         this.dataFactory = dataFactory;
     }
     

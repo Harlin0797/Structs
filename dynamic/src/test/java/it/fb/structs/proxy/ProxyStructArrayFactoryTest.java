@@ -1,5 +1,6 @@
 package it.fb.structs.proxy;
 
+import it.fb.structs.asm.DataStorage;
 import it.fb.structs.asm.StructData;
 import it.fb.structs.test.AbstractStructArrayFactoryTest;
 
@@ -9,7 +10,7 @@ import it.fb.structs.test.AbstractStructArrayFactoryTest;
  */
 public class ProxyStructArrayFactoryTest extends AbstractStructArrayFactoryTest {
 
-    public ProxyStructArrayFactoryTest(StructData.Factory<?> dataFactory) {
-        super(ProxyStructArrayFactory.newInstance(dataFactory));
+    public ProxyStructArrayFactoryTest(DataStorage<?> dataFactory) {
+        super(ProxyAllocator.newInstance(dataFactory));
     }
 }

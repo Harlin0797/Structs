@@ -8,8 +8,8 @@ import it.fb.structs.test.AbstractStructArrayFactoryTest;
  */
 public class AsmStructArrayFactoryTest extends AbstractStructArrayFactoryTest {
 
-    public AsmStructArrayFactoryTest(StructData.Factory<?> dataFactory) {
-        super(AsmStructArrayFactory.newInstance(dataFactory));
+    public AsmStructArrayFactoryTest(DataStorage<?> dataFactory) {
+        super(AsmAllocator.newInstance(dataFactory));
     }
 
 }

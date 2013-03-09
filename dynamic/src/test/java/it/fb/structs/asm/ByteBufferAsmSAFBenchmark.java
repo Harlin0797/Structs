@@ -48,14 +48,14 @@ public class ByteBufferAsmSAFBenchmark extends SimpleBenchmark {
             }
         };
 
-        private final StructData.Factory<?> dataFactory;
+        private final DataStorage<?> dataFactory;
         
-        FactoryEnum(StructData.Factory<?> dataFactory) {
+        FactoryEnum(DataStorage<?> dataFactory) {
             this.dataFactory = dataFactory;
         }
 
         public StructPointer<SimpleStruct> getPtr() {
-            IStructArrayFactory<?> factory = AsmStructArrayFactory.newInstance(dataFactory,
+            Allocator<?> factory = AsmAllocator.newInstance(dataFactory,
                     new ClassDumpImpl(name()));
             MasterStructPointer<SimpleStruct> array = factory.newStructArray(SimpleStruct.class, 32);
             StructPointer<SimpleStruct> ptr = array.at(16);

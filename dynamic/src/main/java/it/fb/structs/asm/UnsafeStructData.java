@@ -98,7 +98,7 @@ public final class UnsafeStructData implements StructData {
         unsafe.freeMemory(baseAddress);
     }
 
-    public static StructData.Factory<UnsafeStructData> Factory = new StructData.Factory<UnsafeStructData>() {
+    public static DataStorage<UnsafeStructData> Factory = new DataStorage<UnsafeStructData>() {
         
         private final Unsafe TheUnsafe;
         

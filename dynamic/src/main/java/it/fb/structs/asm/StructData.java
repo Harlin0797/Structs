@@ -30,9 +30,4 @@ public interface StructData {
     public void putDouble(int position, double value);
     
     public void release();
-
-    public interface Factory<D extends StructData> {
-        public Class<D> getBufferClass();
-        public D newBuffer(int size);
-    }
 }

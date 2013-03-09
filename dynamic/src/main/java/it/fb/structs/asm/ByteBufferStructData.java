@@ -94,12 +94,12 @@ public final class ByteBufferStructData implements StructData {
     public void release() {
     }
 
-    public static class Plain implements StructData.Factory<ByteBufferStructData> {
-        public static final StructData.Factory<ByteBufferStructData> Native 
+    public static class Plain implements DataStorage<ByteBufferStructData> {
+        public static final DataStorage<ByteBufferStructData> Native 
                 = new Plain(ByteOrder.nativeOrder());
-        public static final StructData.Factory<ByteBufferStructData> BigEndian 
+        public static final DataStorage<ByteBufferStructData> BigEndian 
                 = new Plain(ByteOrder.BIG_ENDIAN);
-        public static final StructData.Factory<ByteBufferStructData> LittleEndian
+        public static final DataStorage<ByteBufferStructData> LittleEndian
                 = new Plain(ByteOrder.LITTLE_ENDIAN);
 
         private final ByteOrder order;
@@ -119,12 +119,12 @@ public final class ByteBufferStructData implements StructData {
         }
     }
 
-    public static final class Direct implements StructData.Factory<ByteBufferStructData> {
-        public static final StructData.Factory<ByteBufferStructData> Native 
+    public static final class Direct implements DataStorage<ByteBufferStructData> {
+        public static final DataStorage<ByteBufferStructData> Native 
                 = new Direct(ByteOrder.nativeOrder());
-        public static final StructData.Factory<ByteBufferStructData> BigEndian 
+        public static final DataStorage<ByteBufferStructData> BigEndian 
                 = new Direct(ByteOrder.BIG_ENDIAN);
-        public static final StructData.Factory<ByteBufferStructData> LittleEndian
+        public static final DataStorage<ByteBufferStructData> LittleEndian
                 = new Direct(ByteOrder.LITTLE_ENDIAN);
 
         private final ByteOrder order;

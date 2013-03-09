@@ -2,11 +2,12 @@ package it.fb.structs.proxy;
 
 import it.fb.structs.MasterStructPointer;
 import it.fb.structs.StructPointer;
-import it.fb.structs.asm.IStructArrayFactory;
+import it.fb.structs.asm.DataStorage;
+import it.fb.structs.asm.Allocator;
 import it.fb.structs.asm.StructData;
-import it.fb.structs.asm.StructData.Factory;
+import it.fb.structs.asm.DataStorage;
 import it.fb.structs.core.AbstractOffsetVisitor;
-import it.fb.structs.core.AbstractStructArrayFactory;
+import it.fb.structs.core.AbstractAllocator;
 import it.fb.structs.core.PStructDesc;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
@@ -16,9 +17,9 @@ import java.lang.reflect.Proxy;
  *
  * @author Flavio
  */
-public class ProxyStructArrayFactory<D extends StructData> extends AbstractStructArrayFactory<D> {
+public class ProxyAllocator<D extends StructData> extends AbstractAllocator<D> {
 
-    public ProxyStructArrayFactory(Factory<D> dataFactory) {
+    public ProxyAllocator(DataStorage<D> dataFactory) {
         super(dataFactory);
     }
 
@@ -46,8 +47,8 @@ public class ProxyStructArrayFactory<D extends StructData> extends AbstractStruc
         return ((ProxyStructArrayClassFactory<T>) getClassFactory(subInterface)).newPointer(data, length, index);
     }
 
-    public static <D extends StructData> IStructArrayFactory<D> newInstance(StructData.Factory<D> factory) {
-        return new ProxyStructArrayFactory<D>(factory);
+    public static <D extends StructData> Allocator<D> newInstance(DataStorage<D> factory) {
+        return new ProxyAllocator<D>(factory);
     }
 
     private class ProxyStructArrayClassFactory<T> extends AbstractStructArrayClassFactory<T> {

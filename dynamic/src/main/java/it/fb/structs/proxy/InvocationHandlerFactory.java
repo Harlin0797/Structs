@@ -22,13 +22,13 @@ import java.util.Map.Entry;
  */
 class InvocationHandlerFactory<T, D extends StructData> {
     
-    private final ProxyStructArrayFactory<D> owner;
+    private final ProxyAllocator<D> owner;
     private final Class<T> structInterface;
     private final int structSize;
     private final Map<Method, MethodInvocationHandler<D>> methodHandlers;
     private final Map<Method, ChildPointerFactoryData> childPointers;
 
-    public InvocationHandlerFactory(ProxyStructArrayFactory<D> owner, Class<T> structInterface, int structSize, Map<Method, MethodInvocationHandler<D>> methodHandlers,
+    public InvocationHandlerFactory(ProxyAllocator<D> owner, Class<T> structInterface, int structSize, Map<Method, MethodInvocationHandler<D>> methodHandlers,
             Map<Method, ChildPointerFactoryData> childPointers) {
         this.owner = owner;
         this.structInterface = structInterface;
@@ -58,7 +58,7 @@ class InvocationHandlerFactory<T, D extends StructData> {
     }
     
     public static <T, D extends StructData> InvocationHandlerFactory<T, D> create(
-            ProxyStructArrayFactory<D> owner, Class<T> structInterface, PStructDesc structDesc, AbstractOffsetVisitor offsetVisitor) {
+            ProxyAllocator<D> owner, Class<T> structInterface, PStructDesc structDesc, AbstractOffsetVisitor offsetVisitor) {
         Map<Method, MethodInvocationHandler<D>> methodHandlers = new HashMap<Method, MethodInvocationHandler<D>>();
         Map<Method, ChildPointerFactoryData> childPointers = new HashMap<Method, ChildPointerFactoryData>();
         for (ParsedField field : structDesc.getFields()) {

@@ -3,7 +3,7 @@ package it.fb.structs.asm;
 import it.fb.structs.MasterStructPointer;
 import it.fb.structs.StructPointer;
 import it.fb.structs.core.AbstractOffsetVisitor;
-import it.fb.structs.core.AbstractStructArrayFactory;
+import it.fb.structs.core.AbstractAllocator;
 import it.fb.structs.core.PStructDesc;
 import it.fb.structs.core.ParsedField;
 import it.fb.structs.core.ParsedFieldVisitor;
@@ -20,11 +20,11 @@ import org.objectweb.asm.Type;
  *
  * @author Flavio
  */
-public class AsmStructArrayFactory<D extends StructData> extends AbstractStructArrayFactory<D> {
+public class AsmAllocator<D extends StructData> extends AbstractAllocator<D> {
 
     private final IClassDump dump;
 
-    public AsmStructArrayFactory(StructData.Factory<D> dataFactory, IClassDump dump) {
+    public AsmAllocator(DataStorage<D> dataFactory, IClassDump dump) {
         super(dataFactory);
         this.dump = dump;
     }
@@ -90,7 +90,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
     
     private class Builder<T> {
 
-        private final StructData.Factory<D> dataFactory;
+        private final DataStorage<D> dataFactory;
         private final Class<T> structInterface;
         private final ClassWriter cw;
         private final String internalName;
@@ -101,7 +101,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
         
         private final List<ChildFieldData> childFields = new ArrayList<ChildFieldData>(); 
 
-        public Builder(StructData.Factory<D> dataFactory, Class<T> structInterface, ClassWriter cw, String internalName) {
+        public Builder(DataStorage<D> dataFactory, Class<T> structInterface, ClassWriter cw, String internalName) {
             this.dataFactory = dataFactory;
             this.structInterface = structInterface;
             this.cw = cw;
@@ -193,7 +193,7 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
                     } catch (ClassNotFoundException ex) {
                         throw new IllegalStateException(ex);
                     }
-                    AbstractStructArrayClassFactory<?> childFactory = AsmStructArrayFactory.this.getClassFactory(
+                    AbstractStructArrayClassFactory<?> childFactory = AsmAllocator.this.getClassFactory(
                             childClass);
                     childFields.add(new ChildFieldData(field, offset, childFactory));
                     
@@ -533,13 +533,13 @@ public class AsmStructArrayFactory<D extends StructData> extends AbstractStructA
         }
     }
 
-    public static <D extends StructData> IStructArrayFactory<D> newInstance(StructData.Factory<D> factory) {
-        return new AsmStructArrayFactory<D>(factory, null);
+    public static <D extends StructData> Allocator<D> newInstance(DataStorage<D> factory) {
+        return new AsmAllocator<D>(factory, null);
     }
 
-    public static <D extends StructData> IStructArrayFactory<D> newInstance(StructData.Factory<D> factory,
+    public static <D extends StructData> Allocator<D> newInstance(DataStorage<D> factory,
             IClassDump dump) {
-        return new AsmStructArrayFactory<D>(factory, dump);
+        return new AsmAllocator<D>(factory, dump);
     }
 
     private static String getGenericDescriptor(Class<?> outerClass, Class<?> innerClass) {

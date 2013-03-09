@@ -33,10 +33,10 @@ public abstract class AbstractStructArrayFactoryTest {
         return Arrays.asList(data);
     }    
 
-    protected final IStructArrayFactory<?> factory;
+    protected final Allocator<?> factory;
     private MasterStructPointer<?> master;
 
-    public AbstractStructArrayFactoryTest(IStructArrayFactory<?> factory) {
+    public AbstractStructArrayFactoryTest(Allocator<?> factory) {
         this.factory = factory;
     }
 
