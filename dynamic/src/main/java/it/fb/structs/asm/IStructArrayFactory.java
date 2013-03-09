@@ -1,6 +1,6 @@
 package it.fb.structs.asm;
 
-import it.fb.structs.StructArray;
+import it.fb.structs.MasterStructPointer;
 
 /**
  *
@@ -8,7 +8,7 @@ import it.fb.structs.StructArray;
  */
 public interface IStructArrayFactory<D extends StructData> {
 
-    <T> StructArray<T> newStructArray(Class<T> structInterface, int length);
-    <T> StructArray<T> wrap(Class<T> structInterface, D data);
+    <T> MasterStructPointer<T> newStructArray(Class<T> structInterface, int length);
+    <T> MasterStructPointer<T> wrap(Class<T> structInterface, D data);
 
 }

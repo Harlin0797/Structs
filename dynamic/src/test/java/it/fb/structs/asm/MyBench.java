@@ -1,7 +1,7 @@
 package it.fb.structs.asm;
 
 import it.fb.structs.Field;
-import it.fb.structs.StructArray;
+import it.fb.structs.MasterStructPointer;
 import it.fb.structs.StructPointer;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -71,7 +71,7 @@ public class MyBench {
         public StructPointer<SimpleStruct> getPtr() {
             IStructArrayFactory<?> factory = AsmStructArrayFactory.newInstance(dataFactory,
                     new ClassDumpImpl(name()));
-            StructArray<SimpleStruct> array = factory.newStructArray(SimpleStruct.class, 32);
+            MasterStructPointer<SimpleStruct> array = factory.newStructArray(SimpleStruct.class, 32);
             StructPointer<SimpleStruct> ptr = array.at(16);
             ptr.get().setI(42);
             return ptr;
@@ -222,10 +222,6 @@ public class MyBench {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        public StructArray<SimpleStruct> getOwner() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
         public int length() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -321,10 +317,6 @@ public class MyBench {
         }
 
         public StructPointer<SimpleStruct> at(int index) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public StructArray<SimpleStruct> getOwner() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -430,10 +422,6 @@ public class MyBench {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        public StructArray<SimpleStruct> getOwner() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
         public int length() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -533,10 +521,6 @@ public class MyBench {
         }
 
         public StructPointer<SimpleStruct> at(int index) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public StructArray<SimpleStruct> getOwner() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

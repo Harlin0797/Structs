@@ -1,8 +1,9 @@
 package it.fb.structs.test;
 
-import it.fb.structs.asm.*;
-import it.fb.structs.StructArray;
+import it.fb.structs.MasterStructPointer;
 import it.fb.structs.StructPointer;
+import it.fb.structs.asm.*;
+import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,42 +15,53 @@ import org.junit.Test;
 public abstract class AbstractStructArrayFactoryTest {
     
     protected IStructArrayFactory<?> factory;
+    private MasterStructPointer<?> master;
     
     @Before
     public abstract void setUp();
-    
+
+    @After
+    public void tearDown() {
+        master.release();
+    }
+
+    private <T> MasterStructPointer<T> newStructArray(Class<T> claxx, int len) {
+        MasterStructPointer<T> ret = factory.newStructArray(claxx, len);
+        master = ret;
+        return ret;
+    }
+
     @Test
     public void testMediumSizes() {
-        StructArray<MediumStruct> structArray = factory.newStructArray(MediumStruct.class, 32);
-        assertEquals(32, structArray.getLength());
-        assertEquals(84, structArray.getStructSize());
-        assertEquals(32, structArray.at(0).length());
-        assertEquals(84, structArray.at(0).structSize());
-        assertEquals(1,  structArray.at(0).get().getSimple().length());
-        assertEquals(44, structArray.at(0).get().getSimple().structSize());
+        StructPointer<MediumStruct> ptr = newStructArray(MediumStruct.class, 32);
+        assertEquals(32, ptr.length());
+        assertEquals(84, ptr.structSize());
+        assertEquals(32, ptr.at(0).length());
+        assertEquals(84, ptr.at(0).structSize());
+        assertEquals(1,  ptr.at(0).get().getSimple().length());
+        assertEquals(44, ptr.at(0).get().getSimple().structSize());
     }
 
     @Test
     public void testComplexSizes() {
-        StructArray<ComplexStruct> structArray = factory.newStructArray(ComplexStruct.class, 32);
-        assertEquals(32, structArray.getLength());
-        assertEquals(804, structArray.getStructSize());
-        assertEquals(32, structArray.at(0).length());
-        assertEquals(804, structArray.at(0).structSize());
-        assertEquals(8, structArray.at(0).get().getMedium(0).length());
-        assertEquals(84, structArray.at(0).get().getMedium(0).structSize());
+        StructPointer<ComplexStruct> ptr = newStructArray(ComplexStruct.class, 32);
+        assertEquals(32, ptr.length());
+        assertEquals(804, ptr.structSize());
+        assertEquals(32, ptr.at(0).length());
+        assertEquals(804, ptr.at(0).structSize());
+        assertEquals(8, ptr.at(0).get().getMedium(0).length());
+        assertEquals(84, ptr.at(0).get().getMedium(0).structSize());
     }
 
     @Test
     public void testBasicStruct() {
-        StructArray<BasicStruct> structArray = factory.newStructArray(BasicStruct.class, 32);
-        assertEquals(32, structArray.getLength());
-        assertEquals(36, structArray.getStructSize());
+        StructPointer<BasicStruct> ptr = newStructArray(BasicStruct.class, 32);
+        assertEquals(32, ptr.length());
+        assertEquals(36, ptr.structSize());
         
-        StructPointer<BasicStruct> ptr = structArray.at(0);
         for (int i = 0; i < 32; i++) {
             try {
-                structArray.get(i).setI(i + 12);
+                ptr.duplicate().at(i).get().setI(i + 12);
                 ptr.at(i).get().setL(i + 123L);
                 ptr.get().setB((byte) (i + 11));
                 ptr.get().setS((short) (i + 412));
@@ -59,8 +71,8 @@ public abstract class AbstractStructArrayFactoryTest {
             }
         }
         
-        for (int i = 0; i < structArray.getLength(); i++) {
-            assertEquals(i + 12, structArray.get(i).getI());
+        for (int i = 0; i < ptr.length(); i++) {
+            assertEquals(i + 12, ptr.at(i).get().getI());
             assertEquals(i + 123L, ptr.at(i).get().getL());
             assertEquals((byte) (i + 11), ptr.get().getB());
             assertEquals((short) (i + 412), ptr.get().getS());
@@ -70,15 +82,14 @@ public abstract class AbstractStructArrayFactoryTest {
 
     @Test
     public void testArrayStruct() {
-        StructArray<ArrayStruct> structArray = factory.newStructArray(ArrayStruct.class, 16);
-        assertEquals(16, structArray.getLength());
-        assertEquals(928, structArray.getStructSize());
+        StructPointer<ArrayStruct> ptr = newStructArray(ArrayStruct.class, 16);
+        assertEquals(16, ptr.length());
+        assertEquals(928, ptr.structSize());
         
-        StructPointer<ArrayStruct> ptr = structArray.at(0);
-        for (int i = 0; i < structArray.getLength(); i++) {
+        for (int i = 0; i < ptr.length(); i++) {
             for (int j = 0; j < 32; j++) {
                 try {
-                    structArray.get(i).setI(j, i + j + 12);
+                    ptr.at(i).get().setI(j, i + j + 12);
                     ptr.at(i).get().setL(j, i + j + 123L);
                     ptr.get().setB(j, (byte) (i + j + 11));
                     ptr.get().setS(j, (short) (i + j + 412));
@@ -89,10 +100,10 @@ public abstract class AbstractStructArrayFactoryTest {
             }
         }
         
-        for (int i = 0; i < structArray.getLength(); i++) {
+        for (int i = 0; i < ptr.length(); i++) {
             for (int j = 0; j < 32; j++) {
                 try {
-                    assertEquals(i + j + 12, structArray.get(i).getI(j));
+                    assertEquals(i + j + 12, ptr.at(i).get().getI(j));
                     assertEquals(i + j + 123L, ptr.at(i).get().getL(j));
                     assertEquals((byte) (i + j + 11), ptr.get().getB(j));
                     assertEquals((short) (i + j + 412), ptr.get().getS(j));
@@ -106,14 +117,13 @@ public abstract class AbstractStructArrayFactoryTest {
     
     @Test
     public void testMediumStruct() {
-        StructArray<MediumStruct> structArray = factory.newStructArray(MediumStruct.class, 16);
-        assertEquals(16, structArray.getLength());
-        assertEquals(84, structArray.getStructSize());
+        StructPointer<MediumStruct> ptr = newStructArray(MediumStruct.class, 16);
+        assertEquals(16, ptr.length());
+        assertEquals(84, ptr.structSize());
         
-        StructPointer<MediumStruct> ptr = structArray.at(0);
-        for (int i = 0; i < structArray.getLength(); i++) {
+        for (int i = 0; i < ptr.length(); i++) {
             try {
-                structArray.get(i).setI(i + 19);
+                ptr.at(i).get().setI(i + 19);
                 ptr.at(i).get().setF(i + 1.5f);
                 MediumStruct cur = ptr.get();
                 for (int j = 0; j < 32; j++) {
@@ -129,9 +139,9 @@ public abstract class AbstractStructArrayFactoryTest {
             }
         }
         
-        for (int i = 0; i < structArray.getLength(); i++) {
+        for (int i = 0; i < ptr.length(); i++) {
             try {
-                assertEquals(i + 19, structArray.get(i).getI());
+                assertEquals(i + 19, ptr.at(i).get().getI());
                 assertEquals(i + 1.5f, ptr.at(i).get().getF(), 0.0f);
                 MediumStruct cur = ptr.get();
                 for (int j = 0; j < 32; j++) {
@@ -150,12 +160,12 @@ public abstract class AbstractStructArrayFactoryTest {
     
     @Test
     public void testComplexStruct() {
-        StructArray<ComplexStruct> structArray = factory.newStructArray(ComplexStruct.class, 8);
-        assertEquals(8, structArray.getLength());
-        assertEquals(804, structArray.getStructSize());
+        StructPointer<ComplexStruct> structArray = newStructArray(ComplexStruct.class, 8);
+        assertEquals(8, structArray.length());
+        assertEquals(804, structArray.structSize());
         
-        for (int i = 0; i < structArray.getLength(); i++) {
-            StructPointer<ComplexStruct> ptr = structArray.at(i);
+        for (int i = 0; i < structArray.length(); i++) {
+            StructPointer<ComplexStruct> ptr = structArray.duplicate().at(i);
             StructPointer<MediumStruct> medPtr = ptr.get().getMedium(0);
             ptr.get().setI(i);
             for (int j = 0; j < 8; j++) {
@@ -174,8 +184,8 @@ public abstract class AbstractStructArrayFactoryTest {
             }
         }
 
-        for (int i = 0; i < structArray.getLength(); i++) {
-            StructPointer<ComplexStruct> ptr = structArray.at(i);
+        for (int i = 0; i < structArray.length(); i++) {
+            StructPointer<ComplexStruct> ptr = structArray.duplicate().at(i);
             StructPointer<MediumStruct> medPtr = ptr.get().getMedium(0);
             assertEquals(i, ptr.get().getI());
             for (int j = 0; j < 8; j++) {
@@ -197,14 +207,14 @@ public abstract class AbstractStructArrayFactoryTest {
     
     @Test
     public void testDuplicate() {
-        StructArray<SimpleStruct> structArray = factory.newStructArray(SimpleStruct.class, 8);
-        StructPointer<SimpleStruct> ptr0 = structArray.at(0);
+        StructPointer<SimpleStruct> structArray = newStructArray(SimpleStruct.class, 8);
+        StructPointer<SimpleStruct> ptr0 = structArray.duplicate().at(0);
         StructPointer<SimpleStruct> ptr1 = ptr0.duplicate().at(1);
         
         ptr0.get().setI(12);
         ptr1.get().setI(24);
         
-        assertEquals(12, structArray.get(0).getI());
-        assertEquals(24, structArray.get(1).getI());
+        assertEquals(12, structArray.at(0).get().getI());
+        assertEquals(24, structArray.at(1).get().getI());
     }
 }

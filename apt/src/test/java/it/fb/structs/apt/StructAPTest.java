@@ -1,5 +1,6 @@
 package it.fb.structs.apt;
 
+import it.fb.structs.MasterStructPointer;
 import it.fb.structs.StructPointer;
 import it.fb.structs.test.ArrayStruct;
 import it.fb.structs.test.BasicStruct;
@@ -7,6 +8,7 @@ import it.fb.structs.test.ComplexStruct;
 import it.fb.structs.test.MediumStruct;
 import it.fb.structs.test.SimpleStruct;
 import java.io.IOException;
+import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -18,15 +20,28 @@ import org.junit.Test;
 public class StructAPTest {
 
     private static StructLoader loader;
+    
+    private MasterStructPointer<?> master;
 
     @BeforeClass
     public static void beforeClass() throws IOException {
         loader = StructLoader.create(SimpleStruct.class, MediumStruct.class, ComplexStruct.class, ArrayStruct.class, BasicStruct.class);
     }
 
+    @After
+    public void tearDown() {
+        master.release();
+    }
+
+    private <T> MasterStructPointer<T> newStructArray(Class<T> claxx, int len) {
+        MasterStructPointer<T> ret = loader.newStructArray(claxx, len);
+        master = ret;
+        return ret;
+    }
+
     @Test
     public void testMediumSizes() {
-        StructPointer<MediumStruct> ptr = loader.newStructArray(MediumStruct.class, 32);
+        StructPointer<MediumStruct> ptr = newStructArray(MediumStruct.class, 32);
         assertEquals(32, ptr.length());
         assertEquals(84, ptr.structSize());
         assertEquals(32, ptr.at(0).length());
@@ -37,7 +52,7 @@ public class StructAPTest {
 
     @Test
     public void testComplexSizes() {
-        StructPointer<ComplexStruct> ptr = loader.newStructArray(ComplexStruct.class, 32);
+        StructPointer<ComplexStruct> ptr = newStructArray(ComplexStruct.class, 32);
         assertEquals(32, ptr.length());
         assertEquals(804, ptr.structSize());
         assertEquals(32, ptr.at(0).length());
@@ -48,7 +63,7 @@ public class StructAPTest {
 
     @Test
     public void testBasicStruct() {
-        StructPointer<BasicStruct> ptr = loader.newStructArray(BasicStruct.class, 32);
+        StructPointer<BasicStruct> ptr = newStructArray(BasicStruct.class, 32);
         assertEquals(32, ptr.length());
         assertEquals(36, ptr.structSize());
         
@@ -75,7 +90,7 @@ public class StructAPTest {
 
     @Test
     public void testArrayStruct() {
-        StructPointer<ArrayStruct> ptr = loader.newStructArray(ArrayStruct.class, 16);
+        StructPointer<ArrayStruct> ptr = newStructArray(ArrayStruct.class, 16);
         assertEquals(16, ptr.length());
         assertEquals(928, ptr.structSize());
         
@@ -110,7 +125,7 @@ public class StructAPTest {
     
     @Test
     public void testMediumStruct() {
-        StructPointer<MediumStruct> ptr = loader.newStructArray(MediumStruct.class, 16);
+        StructPointer<MediumStruct> ptr = newStructArray(MediumStruct.class, 16);
         assertEquals(16, ptr.length());
         assertEquals(84, ptr.structSize());
         
@@ -153,7 +168,7 @@ public class StructAPTest {
     
     @Test
     public void testComplexStruct() {
-        StructPointer<ComplexStruct> structArray = loader.newStructArray(ComplexStruct.class, 8);
+        StructPointer<ComplexStruct> structArray = newStructArray(ComplexStruct.class, 8);
         assertEquals(8, structArray.length());
         assertEquals(804, structArray.structSize());
         
@@ -200,7 +215,7 @@ public class StructAPTest {
     
     @Test
     public void testDuplicate() {
-        StructPointer<SimpleStruct> structArray = loader.newStructArray(SimpleStruct.class, 8);
+        StructPointer<SimpleStruct> structArray = newStructArray(SimpleStruct.class, 8);
         StructPointer<SimpleStruct> ptr0 = structArray.duplicate().at(0);
         StructPointer<SimpleStruct> ptr1 = ptr0.duplicate().at(1);
         

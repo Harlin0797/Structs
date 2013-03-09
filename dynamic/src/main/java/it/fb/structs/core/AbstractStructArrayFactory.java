@@ -1,6 +1,6 @@
 package it.fb.structs.core;
 
-import it.fb.structs.StructArray;
+import it.fb.structs.MasterStructPointer;
 import it.fb.structs.asm.IStructArrayFactory;
 import it.fb.structs.asm.StructData;
 import java.util.HashMap;
@@ -23,12 +23,12 @@ public abstract class AbstractStructArrayFactory<D extends StructData> implement
     }
     
     @Override
-    public <T> StructArray<T> newStructArray(Class<T> structInterface, int length) {
+    public <T> MasterStructPointer<T> newStructArray(Class<T> structInterface, int length) {
         return getClassFactory(structInterface).newStructArray(length);
     }
 
     @Override
-    public <T> StructArray<T> wrap(Class<T> structInterface, D data) {
+    public <T> MasterStructPointer<T> wrap(Class<T> structInterface, D data) {
         return getClassFactory(structInterface).wrap(data);
     }
     
@@ -54,8 +54,8 @@ public abstract class AbstractStructArrayFactory<D extends StructData> implement
     
     protected abstract class AbstractStructArrayClassFactory<T> {
         public abstract Class<?> getStructImplementation();
-        public abstract StructArray<T> newStructArray(int length);
-        public abstract StructArray<T> wrap(D data) ;
+        public abstract MasterStructPointer<T> newStructArray(int length);
+        public abstract MasterStructPointer<T> wrap(D data) ;
     }
 
     protected class LocalOffsetVisitor extends AbstractOffsetVisitor {

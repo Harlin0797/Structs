@@ -1,6 +1,6 @@
 package it.fb.structs.proxy;
 
-import it.fb.structs.StructArray;
+import it.fb.structs.MasterStructPointer;
 import it.fb.structs.StructPointer;
 import it.fb.structs.asm.IStructArrayFactory;
 import it.fb.structs.asm.StructData;
@@ -26,10 +26,10 @@ public class ProxyStructArrayFactory<D extends StructData> extends AbstractStruc
     protected <T> AbstractStructArrayClassFactory<T> newStructArrayClassFactory(
             final Class<T> structInterface, PStructDesc structDesc) {
         final Class<?> proxyClass = Proxy.getProxyClass(structInterface.getClassLoader(), 
-                structInterface, StructPointer.class);
-        final Constructor<StructPointer<T>> pointerConstructor;
+                structInterface, MasterStructPointer.class);
+        final Constructor<MasterStructPointer<T>> pointerConstructor;
         try {
-            pointerConstructor = (Constructor<StructPointer<T>>) proxyClass.getConstructor(InvocationHandler.class);
+            pointerConstructor = (Constructor<MasterStructPointer<T>>) proxyClass.getConstructor(InvocationHandler.class);
         } catch (Exception ex) {
             throw new IllegalStateException("Error accessing proxy constructor", ex);
         }
@@ -55,10 +55,10 @@ public class ProxyStructArrayFactory<D extends StructData> extends AbstractStruc
         private final Class<?> proxyClass;
         private final InvocationHandlerFactory<T, D> invocationHandlerFactory;
         private final Class<T> structInterface;
-        private final Constructor<StructPointer<T>> pointerConstructor;
+        private final Constructor<MasterStructPointer<T>> pointerConstructor;
 
         public ProxyStructArrayClassFactory(Class<?> proxyClass, InvocationHandlerFactory<T, D> invocationHandlerFactory, 
-                Class<T> structInterface, Constructor<StructPointer<T>> pointerConstructor) {
+                Class<T> structInterface, Constructor<MasterStructPointer<T>> pointerConstructor) {
             this.proxyClass = proxyClass;
             this.invocationHandlerFactory = invocationHandlerFactory;
             this.structInterface = structInterface;
@@ -71,17 +71,17 @@ public class ProxyStructArrayFactory<D extends StructData> extends AbstractStruc
         }
 
         @Override
-        public StructArray<T> newStructArray(int length) {
+        public MasterStructPointer<T> newStructArray(int length) {
             D data = dataFactory.newBuffer(invocationHandlerFactory.getStructSize() * length);
-            return wrap(data);
+            return newPointer(data, length, 0);
         }
 
         @Override
-        public StructArray<T> wrap(D data) {
-            return new StructArrayProxyImpl<T, D>(structInterface, invocationHandlerFactory, pointerConstructor, data);
+        public MasterStructPointer<T> wrap(D data) {
+            return newPointer(data, data.getSize() / invocationHandlerFactory.getStructSize(), 0);
         }
 
-        StructPointer<T> newPointer(D data, int length, int index) {
+        MasterStructPointer<T> newPointer(D data, int length, int index) {
             try {
                 return pointerConstructor.newInstance(invocationHandlerFactory.newInvocationHandler(data, length, index));
             } catch (Exception ex) {

@@ -1,6 +1,6 @@
 package it.fb.structs.proxy;
 
-import it.fb.structs.StructArray;
+import it.fb.structs.MasterStructPointer;
 import it.fb.structs.StructPointer;
 import it.fb.structs.asm.StructData;
 import it.fb.structs.core.AbstractOffsetVisitor;
@@ -100,7 +100,8 @@ class InvocationHandlerFactory<T, D extends StructData> {
         }
 
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            if (method.getDeclaringClass() == StructPointer.class) {
+            if (method.getDeclaringClass() == StructPointer.class
+                    || method.getDeclaringClass() == MasterStructPointer.class) {
                 Object ret = invokeSP(method, args);
                 if (ret == null) {
                     return proxy;
@@ -142,10 +143,6 @@ class InvocationHandlerFactory<T, D extends StructData> {
             return null;
         }
 
-        public StructArray<T> getOwner() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
         public int length() {
             return length;
         }
@@ -167,6 +164,10 @@ class InvocationHandlerFactory<T, D extends StructData> {
 
         public int index() {
             return (curAddress - baseOffset) / structSize;
+        }
+
+        public void release() {
+            data.release();
         }
 
         private void setBaseOffset(int baseOffset) {

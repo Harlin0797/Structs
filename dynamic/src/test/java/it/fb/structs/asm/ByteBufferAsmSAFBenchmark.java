@@ -3,7 +3,7 @@ package it.fb.structs.asm;
 import com.google.caliper.Param;
 import com.google.caliper.Runner;
 import com.google.caliper.SimpleBenchmark;
-import it.fb.structs.StructArray;
+import it.fb.structs.MasterStructPointer;
 import it.fb.structs.StructPointer;
 import it.fb.structs.test.SimpleStruct;
 import java.io.File;
@@ -57,7 +57,7 @@ public class ByteBufferAsmSAFBenchmark extends SimpleBenchmark {
         public StructPointer<SimpleStruct> getPtr() {
             IStructArrayFactory<?> factory = AsmStructArrayFactory.newInstance(dataFactory,
                     new ClassDumpImpl(name()));
-            StructArray<SimpleStruct> array = factory.newStructArray(SimpleStruct.class, 32);
+            MasterStructPointer<SimpleStruct> array = factory.newStructArray(SimpleStruct.class, 32);
             StructPointer<SimpleStruct> ptr = array.at(16);
             ptr.get().setI(42);
             return ptr;
@@ -201,10 +201,6 @@ public class ByteBufferAsmSAFBenchmark extends SimpleBenchmark {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        public StructArray<SimpleStruct> getOwner() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
         public int length() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -300,10 +296,6 @@ public class ByteBufferAsmSAFBenchmark extends SimpleBenchmark {
         }
 
         public StructPointer<SimpleStruct> at(int index) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public StructArray<SimpleStruct> getOwner() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -406,10 +398,6 @@ public class ByteBufferAsmSAFBenchmark extends SimpleBenchmark {
         }
 
         public StructPointer<SimpleStruct> at(int index) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public StructArray<SimpleStruct> getOwner() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

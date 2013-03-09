@@ -22,13 +22,6 @@ public interface StructPointer<T> {
     public StructPointer<T> at(int index);
 
     /**
-     * TODO: REMOVE.
-     * Retrieves the StructArray this pointer belongs to.
-     * @return 
-     */
-    public StructArray<T> getOwner();
-
-    /**
      * Retrieves the number of elements in the array this pointer points to.
      * @return The number of elements in the array; always positive.
      */

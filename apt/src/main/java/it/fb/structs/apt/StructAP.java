@@ -14,8 +14,8 @@ import com.sun.codemodel.JMod;
 import com.sun.codemodel.JPackage;
 import com.sun.codemodel.JPrimitiveType;
 import com.sun.codemodel.JVar;
+import it.fb.structs.MasterStructPointer;
 import it.fb.structs.Struct;
-import it.fb.structs.StructArray;
 import it.fb.structs.StructPointer;
 import it.fb.structs.core.PFieldTypeVisitor;
 import it.fb.structs.core.PStructDesc;
@@ -178,7 +178,7 @@ public class StructAP extends AbstractProcessor {
             String implName = intfName + "Impl";
             intfClass = cm.ref(intfName);
             implClass = cm._class(JMod.PUBLIC, implName, ClassType.CLASS);
-            implClass._implements(cm.ref(StructPointer.class).narrow(intfClass));
+            implClass._implements(cm.ref(MasterStructPointer.class).narrow(intfClass));
             implClass._implements(intfClass);
             generateUnsafe();
             generateVariables();
@@ -191,7 +191,6 @@ public class StructAP extends AbstractProcessor {
             generatePin();
             generateDuplicate();
             generateSetBaseOffset();
-            generateGetOwner();
             generateRelease();
             
             for (ParsedField field : desc.getFields()) {
@@ -427,11 +426,6 @@ public class StructAP extends AbstractProcessor {
             JVar vBaseOffset = setBaseOffset.param(cm.INT, "_baseOffset");
             setBaseOffset.body().assign(baseOffset, vBaseOffset);
             setBaseOffset.body().invoke("at").arg(JExpr.lit(0));
-        }
-        
-        private void generateGetOwner() {
-            JMethod getOwner = implClass.method(JMod.PUBLIC + JMod.FINAL, cm.ref(StructArray.class).narrow(intfClass), "getOwner");
-            getOwner.body()._throw(JExpr._new(cm.ref(UnsupportedOperationException.class)));
         }
         
         private void generateRelease() {

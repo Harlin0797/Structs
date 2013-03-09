@@ -1,6 +1,6 @@
 package it.fb.structs.apt;
 
-import it.fb.structs.StructPointer;
+import it.fb.structs.MasterStructPointer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -46,11 +46,11 @@ public class StructLoader {
         this.structLoader = structLoader;
     }
     
-    public <T> StructPointer<T> newStructArray(Class<T> struct, int length) {
+    public <T> MasterStructPointer<T> newStructArray(Class<T> struct, int length) {
         try {
             Class<?> simpleStructImpl = structLoader.loadClass(struct.getName() + "Impl");
             Method create = simpleStructImpl.getMethod("create", Integer.TYPE);
-            return (StructPointer<T>) create.invoke(simpleStructImpl, length);
+            return (MasterStructPointer<T>) create.invoke(simpleStructImpl, length);
         } catch (Exception ex) {
             throw new IllegalArgumentException("Error creating array for " + struct, ex);
         }
