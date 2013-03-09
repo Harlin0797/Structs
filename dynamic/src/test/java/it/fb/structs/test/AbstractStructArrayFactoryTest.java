@@ -3,22 +3,42 @@ package it.fb.structs.test;
 import it.fb.structs.MasterStructPointer;
 import it.fb.structs.StructPointer;
 import it.fb.structs.asm.*;
+import java.util.Arrays;
+import java.util.Collection;
 import org.junit.After;
 import static org.junit.Assert.*;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  *
  * @author Flavio
  */
+@RunWith(value = Parameterized.class)
 public abstract class AbstractStructArrayFactoryTest {
     
-    protected IStructArrayFactory<?> factory;
+    @Parameters
+    public static Collection<Object[]> data() {
+        Object[][] data = {
+            { ByteBufferStructData.Plain.Native },
+            { ByteBufferStructData.Plain.BigEndian },
+            { ByteBufferStructData.Plain.LittleEndian },
+            { ByteBufferStructData.Direct.Native },
+            { ByteBufferStructData.Direct.BigEndian },
+            { ByteBufferStructData.Direct.LittleEndian },
+            { UnsafeStructData.Factory }
+        };
+        return Arrays.asList(data);
+    }    
+
+    protected final IStructArrayFactory<?> factory;
     private MasterStructPointer<?> master;
-    
-    @Before
-    public abstract void setUp();
+
+    public AbstractStructArrayFactoryTest(IStructArrayFactory<?> factory) {
+        this.factory = factory;
+    }
 
     @After
     public void tearDown() {
